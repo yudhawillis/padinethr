@@ -134,6 +134,7 @@
                                 foreach($list_level as $row){
                                     $options[$row['id_level']]= $row['level_name'];
                                 }
+                                
                                 $prop_kategori = "id='id_level' class='form-control selectlevel' required"; //class dari bootstrap
                                 if ($status_form == "add") {
                                     echo form_dropdown('id_level', $options, set_value('id_level',$select_id_level), $prop_kategori);
