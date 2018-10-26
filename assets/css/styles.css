@@ -1,0 +1,17 @@
+.table-profile {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.table-profile td {
+    text-align: left;
+    padding: 7px;
+}
+
+.profile-photo{
+    padding-left: 50px;
+    padding-bottom: 20px;
+}
+.form-employee-add .col-md-12{
+    margin-bottom: 20px;
+}

@@ -1,0 +1,29 @@
+/* CSS Document */
+@media only screen and (max-width: 900px) {
+#jarak{
+	padding-top:180px;
+}
+}
+#content-detil{
+	padding-left:100px;
+	max-width:700px;
+}
+h4{
+	color:#F60;
+}
+@media only screen and (max-width: 500px) {
+#content-detil{
+	padding-left:15px;
+	padding-right:15px;
+	width:100%;
+}
+}
+a{
+	font-size:12px;
+	color:#930;
+	font-weight:bold;
+}
+#line{
+	border:1px #09F dotted;
+	margin-bottom:10px;
+}

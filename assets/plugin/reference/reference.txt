@@ -1,0 +1,3 @@
+http://www.jqueryscript.net/demo/Simple-jQuery-Youtube-Video-Gallery-Plugin/
+
+http://www.jqueryscript.net/gallery/Simple-jQuery-Youtube-Video-Gallery-Plugin.html

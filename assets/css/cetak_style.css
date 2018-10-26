@@ -1,0 +1,20 @@
+#terbilang_huruf{
+    text-transform: capitalize;
+}
+#table_profile, #table_profile td, #table_harga, #table_harga td{
+	border-collapse: collapse;
+	border:2px #333 solid;
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:13px;
+}
+
+#table_harga tr{
+	height:30px;
+	
+}
+#table_harga, #table_profile{
+	width:17cm;
+}
+#table_harga td, #table_profile td{
+	padding:4px;
+}

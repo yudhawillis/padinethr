@@ -1,0 +1,74 @@
+/* CSS Document */
+body{
+}
+#header{
+	height:auto;
+	background-color:#600;
+}
+#judul{
+	margin-left:100px;
+	font-family:'Raleway', sans-serif;
+	font-size:24px;
+	color:#FFF;
+	padding-top:20px;
+	padding-bottom:20px;
+	padd
+}
+#judul::before{
+	content:url(../images/kimor_rz_32.png);
+	margin-right:10px;
+}
+#linkhome a{
+	color:#C60;
+	text-decoration:none;
+	font-size:12px;
+	font-weight:bold;
+}
+#linkhome a:hover{
+	text-decoration:underline;
+}
+h1{
+	font-family:'Raleway', sans-serif;
+	font-size:32px;
+	color:#09F;
+}
+#content{
+	padding-left:100px;
+	width:1200px;
+}
+.form-dkm{
+	margin-bottom:20px;
+	width:700px
+}
+
+#sub-form{
+	font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif;
+	font-size:25px;
+	color:#F60;
+}
+label{
+	font-weight:normal;
+}
+#line-sub-form{
+	border:1px #CCC dotted;
+	margin-top:7px;
+	margin-bottom:20px;
+}
+@media only screen and (max-width: 700px) {
+	#judul{
+		margin-left:15px;
+	}
+    #content {
+        width:100%;
+		padding-left:15px;
+		padding-right:15px;
+    }
+	.form-dkm{
+		width:100%
+	}
+}
+#pertanyaan{
+	font-weight:bold;
+	color:#F60;
+	margin-top:50px;
+}

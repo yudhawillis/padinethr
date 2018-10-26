@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PadiNET - Instant Web Store">
+    <meta name="author" content="PT Padi Internet - Web Development Division">
+    <title>PadiNET - InstantWebStore</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/prettyPhoto.css" rel="stylesheet">
+    <link href="css/price-range.css" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+	<link href="css/main.css" rel="stylesheet">
+	<link href="css/responsive.css" rel="stylesheet">
+	<!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+    <script src="js/respond.min.js"></script>
+    <![endif]-->       
+	<link rel="shortcut icon" href="images/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+</head><!--/head-->
+
+<body>
+	<header id="header"><!--header-->
+		<div class="header_top"><!--header_top-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-6">
+						<div class="contactinfo">
+							<ul class="nav nav-pills">
+								<li><a href="#"><i class="fa fa-phone"></i> 031 765 4321</a></li>
+								<li><a href="#"><i class="fa fa-envelope"></i> info@onlinestore.com</a></li>
+							</ul>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="social-icons pull-right">
+							<ul class="nav navbar-nav">
+								<li><a href="#"><i class="fa fa-facebook"></i>Online Store&nbsp;</a></li>
+								<li><a href="#"><i class="fa fa-twitter"></i>@onlinestore </a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header_top-->
+		
+		<div class="header-middle"><!--header-middle-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="logo pull-left" style="margin-top:-15px;margin-bottom:-15px;">
+							<a href="index.html">LOGO PERUSAHAAN</a>
+						</div>						
+					</div>
+					<div class="col-sm-8">
+						<div class="shop-menu pull-right">
+							<ul class="nav navbar-nav">
+								<li><a href="account.html"><i class="fa fa-user"></i> Account</a></li>
+								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Checkout</a></li>
+								<li><a href="cart.html"><i class="fa fa-shopping-cart"></i> Cart</a></li>
+								<li><a href="login.html"><i class="fa fa-lock"></i> Login</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header-middle-->
+	
+		<div class="header-bottom"><!--header-bottom-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-9">
+						<div class="navbar-header">
+							<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+								<span class="sr-only">Toggle navigation</span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+							</button>
+						</div>
+						<div class="mainmenu pull-left">
+							<ul class="nav navbar-nav collapse navbar-collapse">
+								<li><a href="index.html" class="active">Home</a></li>
+								<li class="dropdown"><a href="#">Product<i class="fa fa-angle-down"></i></a>
+                                    <ul role="menu" class="sub-menu">
+                                        <li><a href="shop.html">Product01</a></li>
+                                        <li><a href="shop.html">Product02</a></li>
+                                        <li><a href="shop.html">Product03</a></li>
+                                    </ul>
+                                </li> 
+                                <li><a href="blog-single.html">About Us</a></li>
+                                <li><a href="blog.html">News</a></li>
+                                <li><a href="blog-single.html">FAQ</a></li>
+								<li><a href="contact-us.html">Contact Us</a></li>
+							</ul>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<div class="search_box pull-right">
+							<input type="text" placeholder="Search"/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header-bottom-->
+	</header><!--/header-->		
+
+	<section id="cart_items">
+		<div class="container">
+			<div class="breadcrumbs">
+				<ol class="breadcrumb">
+				  <li><a href="#">Home</a></li>
+				  <li class="active">Shipping Details</li>
+				</ol>
+			</div><!--/breadcrums-->
+
+
+			<h4 class="heading">Shipping Details</h4>
+			<div class="shopper-informations">
+            <p>If you are using different address, please fill out the form below.</p><div class="space-horizon-10"></div>
+				<div class="row">					
+					<div class="col-sm-8 clearfix">
+						<div class="bill-to">							
+							<div class="form-one">
+								<form>
+                                	<label>Shipping Address</label>
+                                    <select>		
+                        				<option>My Account Address</option>
+										<option>Different Address</option>
+									</select>
+                                	<label>Company Name</label>
+									<input type="text" placeholder="">
+                                    <label>Full Name *</label>									
+									<input type="text" placeholder="">
+                                    <label>Email *</label>
+									<input type="text" placeholder="">
+                                    <label>Phone/Mobile</label>
+                                    <input type="text" placeholder="">
+                                    <label>Fax</label>
+                                    <input type="text" placeholder="">                                    
+								</form>
+							</div>
+							<div class="form-two">
+								<form>
+                                	<label>Address *</label>
+									<textarea rows="4" placeholder=""></textarea>
+                                    <label>Zip Code *</label>                                	
+									<input type="text" placeholder="">
+                                    <label>Province *</label>
+									<select>
+										<option>-- Province --</option>
+										<option>DKI Jakarta</option>
+										<option>Jawa Barat</option>
+										<option>Jawa Tengah</option>
+										<option>DI Yogyakarta</option>
+										<option>Jawa Timur</option>
+									</select>
+                                    <label>City *</label>
+									<select>
+										<option>-- City --</option>
+										<option>Jakarta</option>
+										<option>Bandung</option>
+										<option>Semarang</option>
+										<option>Jogja</option>
+										<option>Surabaya</option>
+									</select>
+								</form>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="order-message">
+                        	<form>
+							<label>Note</label>
+							<textarea name="message"  placeholder="Catatan khusus mengenai pemesanan anda" rows="16"></textarea>
+							<!--label><input type="checkbox"> Shipping to bill address</label-->
+                            </form>
+						</div>	
+					</div>					
+				</div>
+                <div class="space-horizon-20"></div>
+				<h4 class="heading">Courier Details</h4>
+                <p>Please select your courier.</p><div class="space-horizon-10"></div>                
+                <div class="row">
+                    <div class="col-sm-8">
+                    	<div class="info-kurir">
+                    		<form>
+                        		<label>Select Courier</label>
+                            	<select>		
+                        			<option>-- Select Courier --</option>
+									<option>Pos Indonesia</option>
+                                	<option>JNE</option>
+                                	<option>TIKI</option>
+								</select>
+                           		<label>Select Delivery Service</label>
+                            	<select>		
+                        			<option>-- Select Service --</option>
+									<option>REG</option>
+                                	<option>YES</option>
+                                	<option>OKE</option>
+								</select>
+                        	</form>
+                    	</div>
+                	</div>
+                 </div>
+                 <div class="space-horizon-20"></div>
+				 <h4 class="heading">Payment Details</h4>
+                 <p>The total amount that you have to pay.</p><div class="space-horizon-10"></div>
+                 <div class="table-responsive cart_info">
+					<table class="table table-condensed">
+						<thead>
+							<tr class="cart_menu">
+								<td class="description">Description</td>
+								<td class="total">Total</td>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td class="cart_description">
+									<p>Total Value</p>
+								</td>
+								<td class="cart_total">
+									<p class="cart_total_price">IDR 600.000</p>
+								</td>
+							</tr>
+                            <tr>
+								<td class="cart_description">
+									<p>VAT 10%</p>
+								</td>
+								<td class="cart_total">
+									<p class="cart_total_price">IDR 60.000</p>
+								</td>
+							</tr>
+							<tr>
+								<td class="cart_description">
+									<p>Shipping Cost</p>
+                                </td>							
+								<td class="cart_total">
+									<p class="cart_total_price">IDR 40.000</p>
+								</td>							
+							</tr>
+							<tr>
+								<td class="cart_description">
+									<span>GRAND TOTAL</span>
+								</td>
+								<td class="cart_total">
+									<p class="cart_total_payment" >IDR 700.000</p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+            <div style="margin-bottom:30px;">
+            <a class="btn btn-default calculate" href="cart.html">Back</a>
+            <a class="btn btn-default calculate" href="checkout.html">Checkout</a>
+            </div>			
+		</div>
+	</section> <!--/#cart_items-->
+
+	
+
+	<footer id="footer"><!--Footer-->
+		<div class="footer-top" style="display:none;">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-4 col-sm-4">
+						<div class="box-footer">
+			 				<i class="fa fa-shopping-basket fa-3x"></i>
+			 				<h4>Lorem Ipsum Dolor Sit Amet</h4>
+                            <p>Consectetur adipiscing elit. Nullam rhoncus turpis ut nisi ultrices bibendum. Praesent pulvinar lobortis sem sit amet rutrum.</p>
+			 				<div class="clearfix"> </div>
+			 			</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="box-footer">
+			 				<i class="fa fa-shopping-cart fa-3x"></i>
+			 				<h4>Pellentesque Eu Tellus Blandit</h4>
+                            <p>Hendrerit elit malesuada, gravida lorem. Ut a posuere risus, non viverra turpis. Integer nec ipsum eu lectus rhoncus efficitur id eu nibh.</p>
+			 				<div class="clearfix"> </div>
+			 			</div>
+					</div>
+                    <div class="col-md-4 col-sm-4">
+						<div class="box-footer">
+			 				<i class="fa fa-shield fa-3x"></i>
+			 				<h4>Nulla Eu Aliquam Magna</h4>
+                            <p>Praesent venenatis quis orci in fringilla. Aenean congue sodales mi, sit amet feugiat libero bibendum sit amet.</p>
+			 				<div class="clearfix"> </div>
+			 			</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="footer-widget">
+			<div class="container">
+				<div class="row">
+                	<div class="col-md-3 col-sm-6">
+						<div class="single-widget">
+                        	<h2>Information</h2>
+							<ul class="nav nav-pills nav-stacked">
+								<li><a href="#">About Us</a></li>
+								<li><a href="#">Order Tutorial</a></li>
+                                <li><a href="#">Payment Confirmation</a></li>
+                                <li><a href="#">FAQ</a></li>
+							</ul>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-6">
+						<div class="single-widget">
+                        	<h2>Berita Promo</h2>
+							<ul class="nav nav-pills nav-stacked">
+								<li><a href="#">30/12/2016 | End of Year Promo</a></li>
+								<li><a href="#">10/10/2016 | Store Relocation</a></li>
+                                <li><a href="#">01/07/2016 | Eid Mubarak Promo </a></li>
+                                <li><a href="#">14/04/2016 | Buy One Get One</a></li>
+							</ul>
+						</div>
+					</div>
+                    <div class="col-md-3 col-sm-6">
+						<div class="single-widget">
+                        	<h2>Social Media</h2>
+							<ul class="nav nav-pills nav-stacked">
+								<li><a href="#"><i class="fa fa-facebook-official"></i>Facebook</a></li>
+								<li><a href="#"><i class="fa fa-twitter"></i>Twitter</a></li>
+                                <li><a href="#"><i class="fa fa-instagram"></i>Instagram</a></li>
+                                <li><a href="#"><i class="fa fa-youtube"></i>Youtube</a></li>
+							</ul>
+						</div>
+					</div>					
+					<div class="col-md-3 col-sm-6">
+						<div class="single-widget">
+							<h2>Contact</h2>
+                            <ul class="nav nav-pills nav-stacked">
+                            	<li><i class="fa fa-building"></i>PT. ONLINE STORE</li>
+								<li><i class="fa fa-home"></i>Jl. Raya 100, Surabaya</li>
+                            	<li><i class="fa fa-phone-square"></i>031-7654321</li>
+                            	<li><i class="fa fa-fax"></i>031-7654321</li>
+                            </ul>
+						</div>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+		
+		<div class="footer-bottom">
+			<div class="container">
+				<div class="row">
+					<p class="pull-left">Copyright © 2016 Padiflez - Instant Web Store | All rights reserved.</p>
+					<p class="pull-right">Developed by <span><a target="_blank" href="http://padi.web.id">PadiWEB</a></span></p>
+				</div>
+			</div>
+		</div>		
+	</footer><!--/Footer-->
+	
+    <script src="js/jquery.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/jquery.scrollUp.min.js"></script>
+	<script src="js/price-range.js"></script>
+    <script src="js/jquery.prettyPhoto.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/purechat.js"></script>
+	
+       
+</body>
+</html>

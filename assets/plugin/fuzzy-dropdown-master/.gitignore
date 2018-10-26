@@ -1,0 +1,16 @@
+# Logs
+logs
+*.log
+
+# Ignore sublime text stuff
+*.sublime*
+
+# Apple stuff
+.DS_Store
+
+# Ignore bower components
+bower_components/*
+
+node_modules
+
+.tern-port
