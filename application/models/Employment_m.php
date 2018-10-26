@@ -61,12 +61,17 @@ class Employment_m extends CI_Model{
         return $this->db->update('employment', $data);
     }
 
-    function update_employment_active($id_employee, $tgl_berakhir, $status) {
-        $sql = 'UPDATE employment SET status = '.$status.', tgl_berakhir = '.$tgl_berakhir.'
-            WHERE id_employee = '.$id_employee.'
-        ';
-        $this->db->query($sql);
-    }
+//    function update_employment_active($id_employee, $tgl_berakhir, $status) {
+//        $sql = "UPDATE employment SET status = '.$status.', tgl_berakhir = '".$tgl_berakhir."'
+//            WHERE id_employee = '.$id_employee.'
+//        ";
+//        $this->db->query($sql);
+//    }
+	function update_employment_active($id_employee, $data) {
+		//$this->db->where('id_employee', $id_employee);
+		$this->db->where(array('id_employee' => $id_employee, 'status' => 1));
+		return $this->db->update('employment', $data);
+	}
 
     function jum_employment_staff($id_employee){
         $query = $this->db->get_where('employment', array('id_employee' => $id_employee));//namatabel

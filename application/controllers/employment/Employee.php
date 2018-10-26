@@ -67,6 +67,14 @@ class Employee extends CI_Controller{
         $data['halaman'] = $this->pagination->create_links();
         $data['startnum'] = $page + 1;
         $data['list_member'] = $this->member_m->select_allpaging($config["per_page"], $page);
+        $i=0;
+        foreach($data['list_member'] as $member){
+        	$cek_reset = $this->leave_m->select_leave_history_employee($member['id_employee']);
+        	if(!empty($cek_reset)) $data['list_member'][$i]['button_reset'] = FALSE;
+        	else $data['list_member'][$i]['button_reset'] = TRUE;
+
+        	$i++;
+		}
 
         $this->load->view('em_employee_v', $data);
 
@@ -174,6 +182,16 @@ class Employee extends CI_Controller{
         $data['tipe_print'] = 'search';//untuk button print
         $data['sortby'] = $sortby;//untuk button print
         $data['sorttype'] = $sorttype;//untuk button print
+
+		$i=0;
+		foreach($data['list_member'] as $member){
+			$cek_reset = $this->leave_m->select_leave_history_employee($member['id_employee']);
+			if(!empty($cek_reset)) $data['list_member'][$i]['button_reset'] = FALSE;
+			else $data['list_member'][$i]['button_reset'] = TRUE;
+
+			$i++;
+		}
+
         $this->load->view('em_employee_v', $data);
 
     }
@@ -640,6 +658,8 @@ class Employee extends CI_Controller{
         if($this->log_super_hr_staff()){
         }
         else redirect(base_url().'dashboard');
+		$data['list_employment_all'] = $this->employment_m->select_all_employee($id_employee);
+		$data['startnum'] = 1;
 
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
@@ -749,11 +769,6 @@ class Employee extends CI_Controller{
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
 
-        $current_employment = $this->employment_m->select_detil_employment_active($id_employee);
-        if(empty($current_employment)){
-        	$leave_quota_ext_set = 3;
-		} else $leave_quota_ext_set = $current_employment[0]['leave_quota_ext'];
-
         $data['status_form'] = "add";
         $this->load->library('form_validation');
 
@@ -768,6 +783,13 @@ class Employee extends CI_Controller{
             redirect(base_url().'employment/employee/detil_data/'.$id_employee);
         }
         else {
+			$current_employment = $this->employment_m->select_detil_employment_active($id_employee);
+			if(empty($current_employment)){
+				$leave_quota_ext_set = 3;
+			} else {
+				$leave_quota_ext_set = $current_employment[0]['leave_quota_ext'];
+			}
+
             $data_formprof['id_level'] = $this->input->post('id_level');
             $data_formprof['id_city'] = $this->input->post('id_city');
             $data_formprof['supervisor'] = $this->input->post('id_employee');
@@ -781,9 +803,9 @@ class Employee extends CI_Controller{
             $data_formprof['id_employee'] = $id_employee;
             $data_formprof['division'] = $current_employment[0]['division'];
 
-            $tgl_berakhir_em = $data_formprof['tgl_mulai'];
-            $status_em = 0;
-            $this->employment_m->update_employment_active($id_employee, $tgl_berakhir_em, $status_em);
+			$data_formup['status'] = 0;
+			$data_formup['tgl_berakhir'] = $data_formprof['tgl_mulai'];
+          	$this->employment_m->update_employment_active($id_employee, $data_formup);
 
             $this->employment_m->insert_employment($data_formprof);
             $this->session->set_flashdata('pesan', 'Anda telah berhasil mengubah data employment.');

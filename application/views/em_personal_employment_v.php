@@ -94,15 +94,71 @@
                                             <?php
                                             }
                                             ?>
-                                            <a href="<?php echo base_url(); ?>employment/employee/employment_history/<?php echo $list_employee[0]['id_employee']  ?>">
-                                                <button type="button" class="btn btn-success"><span class="glyphicon glyphicon-book"></span> History</button>
-                                            </a>
+<!--                                            <a href="--><?php //echo base_url(); ?><!--employment/employee/employment_history/--><?php //echo $list_employee[0]['id_employee']  ?><!--">-->
+<!--                                                <button type="button" class="btn btn-success"><span class="glyphicon glyphicon-book"></span> History</button>-->
+<!--                                            </a>-->
                                         </div>
+
+
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="panel panel-info">
+								<div class="panel-heading">
+									Employment History
+								</div>
+								<div class="panel-body">
+									<div class="table-responsive">
+										<table class="table" id="table_driver">
+											<thead>
+											<tr>
+												<td>No</td>
+												<td>Position</td>
+<!--												<td>Division</td>-->
+												<td>City</td>
+												<td>Start Date</td>
+												<td>End Date</td>
+												<td>Level</td>
+												<td>Description</td>
+												<td>Status</td>
+											</tr>
+											</thead>
+
+											<?php
+											$no=1;
+											foreach($list_employment_all as $row) { ?>
+												<tr>
+													<td><?php echo $startnum; ?></td>
+													<td><?php echo $row['position']; ?></td>
+<!--													<td>--><?php //echo $row['division']; ?><!--</td>-->
+													<td><?php echo $row['name_city']; ?></td>
+													<td><?php echo $row['tgl_mulai']; ?></td>
+													<td><?php echo $row['tgl_berakhir']; ?></td>
+													<td><?php echo $row['level_name']; ?></td>
+													<td><?php echo $row['description']; ?></td>
+													<td><?php
+														if ($row['employment_status'] == "1") echo "Aktif";
+														else if ($row['employment_status'] == "0") echo "Non Aktif";
+														?>
+													</td>
+													<td></td>
+													<!--                                                    <td><a href="--><?php //echo base_url(); ?><!--admin/speedtes/edit_data/--><?php //echo $row['id_speedtes']; ?><!--">Edit</a> |-->
+													<!--                                                        <a name="--><?php //echo $row['id_speedtes']; ?><!--" class="hapus" href="#">Delete</a>-->
+													<!--                                                    </td>-->
+												</tr>
+												<?php
+												$startnum++;
+											} ?>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
                 </div>
             </div>
         </div>
@@ -134,7 +190,7 @@
                                 foreach($list_level as $row){
                                     $options[$row['id_level']]= $row['level_name'];
                                 }
-                                
+
                                 $prop_kategori = "id='id_level' class='form-control selectlevel' required"; //class dari bootstrap
                                 if ($status_form == "add") {
                                     echo form_dropdown('id_level', $options, set_value('id_level',$select_id_level), $prop_kategori);
