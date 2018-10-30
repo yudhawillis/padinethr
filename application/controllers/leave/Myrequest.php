@@ -215,38 +215,28 @@ class Myrequest extends CI_Controller{
             $list_leave = $this->leave_m->select_detil_leave($id_leave);
             $req_quota = $list_leave[0]['days'];
             $payroll_deduction = $list_leave[0]['payroll_deduction'];
-            $leave_quota_ext = $list_leave[0]['leave_quota_ext'];
+            $leave_quota_ext_used = $list_leave[0]['leave_quota_ext'];
+            //echo $leave_quota_ext."leave kuota ext <br>";
             $dispensation_quota = $list_leave[0]['dispensation_quota'];
             $current_quota = $this->cek_jum_quota($id_current_user);
             $current_quota_ext = $this->cek_jum_quota_ext($id_current_user);
+            //echo $current_quota_ext."<br>";
             $current_employment = $this->get_current_employment($id_current_user);
+			$leave_quota_ext = $current_employment[0]['leave_quota_ext'];
 
-            if($payroll_deduction != 0) {
-                $cek_sisa_payroll = $req_quota - $payroll_deduction;
-                //else if requestnya sejumlah payroll_deduction, maka proses berhenti, tidak melakukan apapun
-            }
-            if($leave_quota_ext != 0){ // jika ada sisa, maka mulai mengisi saldo jatah cuti
-                if(isset($cek_sisa_payroll)) $cek_sisa_quota_ext = $cek_sisa_payroll - $leave_quota_ext;
-                else {
-                    $cek_sisa_quota_ext = $req_quota - $leave_quota_ext;
-                    $leave_quota_ext_updated = $current_quota_ext + $cek_sisa_quota_ext;
-                }
-            }
-            if($dispensation_quota != 0){
-                if(isset($cek_sisa_quota_ext)) $cek_sisa_dispensation = $cek_sisa_quota_ext - $dispensation_quota;
-                else $cek_sisa_dispensation = $req_quota - $dispensation_quota;
-            }
+            $other_quota = $payroll_deduction + $dispensation_quota;
+			$cek_sisa_payroll = $req_quota - $other_quota;
+			$cek_sisa_quota_ext = $cek_sisa_payroll - $leave_quota_ext_used;//
+			//misal  req 2 days hasil dari pengurangan other kuota. quota ext terpakai 1 hari
+			//dengan anggapan req 2 days, other kuota 0, jatah kuota minus 1 day
+			//maka quota ext yang baru adalah 3 - jatah kuota minus(1 day) = 2
 
-            if(isset($cek_sisa_dispensation)){ //atau $req_quota
-                $leave_quota_updated = $current_quota + $cek_sisa_dispensation;
-            }
-            else $leave_quota_updated = $current_quota + $req_quota;
+			//misal req 0 days hasil dari pengurangan other kuuta. quota ext pasti terpakai 0 hari, karena tidak ada sisa dari req utama
+			$data_formem['leave_quota'] = $cek_sisa_quota_ext;
+			$data_formem['leave_quota_ext'] = $leave_quota_ext + $leave_quota_ext_used;
+			var_dump($data_formem);
 
-
-            $data_formem['leave_quota'] = $leave_quota_updated;
-            if(isset($leave_quota_ext_updated)) $data_formem['leave_quota'] = $leave_quota_ext_updated;
             $this->employment_m->update_employment($current_employment[0]['id_employment'], $data_formem);
-
         }
         $data_formlv['cancel_status'] = 1;
         $this->leave_m->update_leave($id_leave, $data_formlv);

@@ -57,6 +57,10 @@
                                                         <?php
                                                         echo $current_quota." day/s";
                                                         ?>
+														<br />Current Leave Quota Extended :
+														<?php
+														echo $current_quota_ext." day/s (max 3 days)";
+														?>
                                                     </i>
                                                 </div>
                                             </div>

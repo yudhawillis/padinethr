@@ -372,10 +372,71 @@ class Approval extends CI_Controller{
         $current_quota = $this->cek_jum_quota($data_formap['id_employee']);
         $current_quota_ext = $this->cek_jum_quota_ext($data_formap['id_employee']);
 
+//        echo $current_quota."<br>";
+//		echo $current_quota_ext."<br>";
+
         $this->count_request_leave($id_leave, $dispensation_quota, $current_quota, $current_quota_ext);
 
         $this->session->set_flashdata('pesan', 'Anda telah berhasil melakukan <i>approve leave</i>.');
         redirect(base_url().'leave/approval');
+
+//		$cek_jum_approve = $this->approval_m->select_jum_approve_leave($id_leave);
+//		$jum_app_final = 0;
+//		$list_approval_user = array();
+//		if ($cek_jum_approve == 2){
+//			$get_data_approve = $this->approval_m->select_leave_approval($id_leave);
+//			foreach($get_data_approve as $appr){
+//				if ($appr['ap_status'] = 1){
+//					$list_approval_user[] = $appr['ap_status'];
+//				}
+//			}
+//			$jum_app_final = count($list_approval_user);
+//			if ($jum_app_final == 2){
+//				echo "hahaah";
+//				echo $get_data_approve[0]['leave_quota']."<br>";
+//				echo $get_data_approve[0]['days']."<br>";
+//				echo $current_quota."<br>";
+//				echo $current_quota_ext."<br>";
+//
+//				//$this->update_leave_employment($get_data_approve[0]['id_employment'], $get_data_approve[0]['leave_quota'], $get_data_approve[0]['days'], $dispensation_quota, $current_quota, $current_quota_ext);
+//			}
+//		}
+//		$leavequota = $get_data_approve[0]['leave_quota'];
+//		$reqleave = $get_data_approve[0]['days'];
+//		$reqleave = $reqleave - $dispensation_quota;//dikurangi di awal, sehingga kalkulasi dispensasi diambil dari jumlh request keseluruhan
+//		$cek_req_quota = $current_quota - $reqleave; //abs agar hasilnya selalu postif
+//		if($cek_req_quota < 0) {
+//			$leave_quota_updated = 0;
+//			$data_formprof['leave_quota'] = $leave_quota_updated;
+//			$cek_req_quota_ext = $current_quota_ext - abs($reqleave);
+//			$payroll_deduction = 0;
+//			$debt_leave_quota = 0;
+//			if ($cek_req_quota_ext >= 0) {
+//				//jika hasilnya kurang dari nol maka sisanya adalah dibuat sbg bilangan positif sebagai payrol_deduction
+//				$payroll_deduction = abs($cek_req_quota_ext);
+//			} else {
+//				//jika hasilnya 0 atau lebih dari nol maka tetap sebagai hasil positif dan mengupdate $debt_leave_quota
+//				$debt_leave_quota = abs($cek_req_quota_ext);
+//			}
+//			$cek_leave_quota_ext_updated = 3 - $debt_leave_quota; //karena $debt_leave_quota adalah sisa hasil dikurangi $reqleave
+//			if($cek_leave_quota_ext_updated < 0){
+//				$leave_quota_ext_updated = 0;
+//			} else $leave_quota_ext_updated = 3 - $debt_leave_quota;
+////            //start calculating dispensation //tidak jadi dipakai karna dispensation_quota sudah dikurangi sejak awal
+////            if ($payroll_deduction != 0) {
+////                $payroll_deduction = $payroll_deduction - $dispensation_quota;
+////            }
+////            else $leave_quota_ext_updated = $leave_quota_ext_updated - $dispensation_quota;
+////            //end calculating dispensation
+//			echo $debt_leave_quota;
+//			$data_formprof['leave_quota_ext'] = $leave_quota_ext_updated;
+//
+//		} else if($cek_req_quota >= 0){
+//
+//			//$data_formprof['leave_quota'] = $leavequota - $reqleave + $dispensation_quota; //tidak jadi dipakai karna dispensation_quota sudah dikurangi sejak awal
+//			$data_formprof['leave_quota'] = $leavequota - $reqleave;
+//		}
+//		var_dump($data_formprof);
     }
 
     public function reject_leave($id_leave){
@@ -447,8 +508,10 @@ class Approval extends CI_Controller{
                 //jika hasilnya 0 atau lebih dari nol maka tetap sebagai hasil positif dan mengupdate $debt_leave_quota
                 $debt_leave_quota = $cek_req_quota_ext;
             }
-            $leave_quota_ext_updated = 3 - $debt_leave_quota; //karena $debt_leave_quota adalah sisa hasil dikurangi $reqleave
-
+			$cek_leave_quota_ext = 3 - $debt_leave_quota; //karena $debt_leave_quota adalah sisa hasil dikurangi $reqleave
+			if($cek_leave_quota_ext < 0){
+				$leave_quota_ext_updated = 0;
+			} else $leave_quota_ext_updated = 3 - $debt_leave_quota;
 //            //start calculating dispensation //tidak jadi dipakai karna dispensation_quota sudah dikurangi sejak awal
 //            if ($payroll_deduction != 0) {
 //                $payroll_deduction = $payroll_deduction - $dispensation_quota;

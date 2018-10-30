@@ -929,6 +929,39 @@ class Employee extends CI_Controller{
         redirect(base_url().'employment/employee/detil_data/'.$id_employee);
     }
 
+	public function multiple_reset_leave(){
+		if($this->log_super_hr()){
+		}
+		else redirect(base_url().'dashboard');
+
+		if ($this->input->post('chkbox_reset')){
+			$data_id = $this->input->post('chkbox_reset');
+			//var_dump($data_id);
+			foreach ($data_id as $id_employee){
+				$current_employment = $this->employment_m->select_detil_employment_active($id_employee);
+				$id_employment = $current_employment[0]['id_employment'];
+				$id_employee = $current_employment[0]['id_employee'];
+				$current_level = $current_employment[0]['id_level'];
+				$debt_leave_quota = 3 - $current_employment[0]['leave_quota_ext'];
+
+				$detil_level = $this->level_m->select_detil_level($current_level);
+				$level_quota = $detil_level[0]['level_quota'];
+
+				$data_formem['leave_quota'] = $level_quota - $debt_leave_quota;
+				$this->employment_m->update_employment($id_employment, $data_formem);
+
+				$data_formhs['year_leave_history'] = date("Y");
+				$data_formhs['id_employee'] = $id_employee;
+				$this->leave_m->insert_leave_history($data_formhs);
+			}
+
+			$this->session->set_flashdata('pesan', 'Anda telah berhasil melakukan reset <i>leave quota</i> pada beberapa karyawan.');
+			redirect(base_url().'employment/employee/');
+		} else redirect(base_url().'employment/employee/');
+
+
+	}
+
 
     public function up_imgprofile()
     {
