@@ -810,6 +810,7 @@ class Employee extends CI_Controller{
             $this->employment_m->insert_employment($data_formprof);
             $this->session->set_flashdata('pesan', 'Anda telah berhasil mengubah data employment.');
             redirect(base_url().'employment/employee/personal_employment/'.$id_employee);
+
         }
     }
 
@@ -889,16 +890,20 @@ class Employee extends CI_Controller{
                 $get_post_quota = $this->level_m->select_detil_level($id_level);
                 $post_level_quota = $get_post_quota[0]['level_quota']; //level terbaru
 
-                $get_month_now = date('m');
-                $month_cur = 12 - $get_month_now - 1;
+                $get_month_cur = date('m');
+                $number_date = date('j', strtotime($data_formprof['tgl_mulai']));
+                if ($number_date > 14) $month_cur = $get_month_cur;
+                else $month_cur = $get_month_cur - 1;
                 $month_remaining = 12 - $month_cur;
 
                 $used_quota = $cur_level_quota - $current_quota;
 
-                $result_current = ($month_cur / $cur_level_quota) * $cur_level_quota;
-                $result_post = ($month_remaining / $post_level_quota) * $post_level_quota;
+                $count_current_month = round(($month_cur / 12),2);
+                $count_remaining_month = round(($month_remaining / 12),2);
+                $result_current = $count_current_month * $cur_level_quota;
+                $result_post = $count_remaining_month * $post_level_quota;
 
-                $leave_quota = ($result_current + $result_post) - $used_quota;
+                $leave_quota = round(($result_current + $result_post),0) - $used_quota;
             }
         }
         return $leave_quota;
