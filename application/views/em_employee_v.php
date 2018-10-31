@@ -169,7 +169,7 @@
                                                         <?php if ($row['button_reset']){
                                                         	if ($this->session->userdata('id_role')==1 || $this->session->userdata('id_role')==2) {
 																?>
-																<a href="<?php echo base_url(); ?>employment/employee/reset_leave/<?php echo $row['id_employee']; ?>"><button type="button" class="btn btn-primary btn-md"><span class="glyphicon glyphicon-retweet"></span> Reset Quota</button></a>
+																<a href="<?php echo base_url(); ?>employment/employee/reset_leave/<?php echo $row['id_employee']; ?>"><button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-retweet"></span> Reset Quota</button></a>
 
 																<?php
 															}

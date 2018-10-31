@@ -984,6 +984,45 @@ class Employee extends CI_Controller{
         }
     }
 
+    private function count_days($start_date, $end_date, $weekendtype) {
+        $start = new DateTime($start_date);
+        $end = new DateTime($end_date);
+        // otherwise the  end date is excluded (bug?)
+        $end->modify('+1 day');
+        $interval = $end->diff($start);
+        // total days
+        $days = $interval->days;
+        // create an iterateable period of date (P1D equates to 1 day)
+        $period = new DatePeriod($start, new DateInterval('P1D'), $end);
+
+        // best stored as array, so you can add more than one
+        //$holidays = array('2018-07-18'); // harilibur nasional
+        $holidays = $this->joint_holiday();
+
+        foreach($period as $dt) {
+            $curr = $dt->format('D');
+
+            // substract if Saturday or Sunday
+            if ($weekendtype == "satsun") {
+                if ($curr == 'Sat' || $curr == 'Sun') {
+                    $days--;
+                }
+                // (optional) for the updated question
+                elseif (in_array($dt->format('Y-m-d'), $holidays)) {
+                    $days--;
+                }
+            } else if ($weekendtype == "sun") {
+                if ($curr == 'Sun') {
+                    $days--;
+                }
+                elseif (in_array($dt->format('Y-m-d'), $holidays)) {
+                    $days--;
+                }
+            }
+        }
+        return $days;
+    }
+
     private function generateRandomString($length = 6) {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);

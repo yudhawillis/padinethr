@@ -58,11 +58,11 @@
                                                         End Date
                                                     </a>
                                                 </td>
-                                                <td>
-                                                    <a href="<?php echo base_url(); ?>leave/myrequest/search/days/<?php echo $typeorder; ?>">
-                                                        Days
-                                                    </a>
-                                                </td>
+<!--                                                <td>-->
+<!--                                                    <a href="--><?php //echo base_url(); ?><!--leave/myrequest/search/days/--><?php //echo $typeorder; ?><!--">-->
+<!--                                                        Days-->
+<!--                                                    </a>-->
+<!--                                                </td>-->
                                                 <td>
                                                     <a href="<?php echo base_url(); ?>leave/myrequest/search/description/<?php echo $typeorder; ?>">
                                                         Leave Explanation
@@ -99,13 +99,13 @@
                                                     ?>
                                                     >
                                                 </td>
-                                                <td><input type="text" name="search_days" class="form-control" placeholder="..."<?php
-                                                    if(isset($days)){
-                                                        echo "value = '".$days."'";
-                                                    }
-                                                    ?>
-                                                    >
-                                                </td>
+<!--                                                <td><input type="text" name="search_days" class="form-control" placeholder="..."--><?php
+//                                                    if(isset($days)){
+//                                                        echo "value = '".$days."'";
+//                                                    }
+//                                                    ?>
+<!--                                                    >-->
+<!--                                                </td>-->
                                                 <td><input type="text" name="search_description" class="form-control" placeholder="..."<?php
                                                     if(isset($description)){
                                                         echo "value = '".$description."'";
@@ -140,7 +140,7 @@
                                                     <td><?php echo $row['submission_date']; ?></td>
                                                     <td><?php echo $row['start_date']; ?></td>
                                                     <td><?php echo $row['end_date']; ?></td>
-                                                    <td><?php echo $row['days']; ?></td>
+<!--                                                    <td>--><?php //echo $row['days']; ?><!--</td>-->
                                                     <td><?php echo $row['description'];
 //                                                        if ($row['leave_quota_ext'] > 0) {
 //                                                            echo "<br /><i style='font-size: 11px;'>inc Extended Leave Quota ".$row['leave_quota_ext']." day/s</i>";
