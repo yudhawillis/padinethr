@@ -68,6 +68,9 @@
                                                         Leave Explanation
                                                     </a>
                                                 </td>
+												<td>
+													Days
+												</td>
                                                 <td>
                                                     Status
                                                 </td>
@@ -113,6 +116,7 @@
                                                     ?>
                                                     >
                                                 </td>
+												<td></td>
                                                 <td></td>
                                                 <!--                                                <td>--><?php
                                                 //
@@ -150,7 +154,9 @@
 //                                                        }
                                                     ?>
                                                     </td>
+													<td><?php echo $row['day']; ?></td>
                                                     <td>
+
                                                         <?php
 														if ($row['cancel_status']==1){
 															echo "Request Has Been Cancelled.";

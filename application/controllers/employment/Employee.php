@@ -19,6 +19,7 @@ class Employee extends CI_Controller{
         $this->load->model('role_m', 'role_m');
         $this->load->model('approval_m', 'approval_m');
         $this->load->model('adjustment_m', 'adjustment_m');
+		$this->load->model('holiday_m', 'holiday_m');
 
         if($this->logged_in()){
         }
@@ -462,6 +463,9 @@ class Employee extends CI_Controller{
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
         $data['selected_employee_id'] = $id_employee;
+		$data['current_employee'] = $this->member_m->select_detil_employee($id_employee);
+		if ($data['current_employee'][0]['id_city'] == 1 || $data['current_employee'][0]['id_city'] == 2) $weekendtype = "satsun";
+		else $weekendtype = "sun";
         $data['active'] = "personal_leave";
 
         if($this->session->userdata('submission_date')) $this->session->unset_userdata('submission_date');
@@ -497,6 +501,23 @@ class Employee extends CI_Controller{
         $data['halaman'] = $this->pagination->create_links();
         $data['startnum'] = $page + 1;
         $data['list_personal_leave'] = $this->list_personal_leave($id_employee);
+
+		$i = 0;
+		foreach ($data['list_personal_leave'] as $leave){
+			$id_leave = $data['list_personal_leave'][$i]['id_leave'];
+			$approval = $this->approval_m->select_leave_approval($id_leave);
+			if ($approval != "") {
+				$j = 1;
+				foreach ($approval as $app) {
+					$data['list_personal_leave'][$i]{'app_status_'.$j} = $app["ap_status"];
+					$data['list_personal_leave'][$i]{'app_name_'.$j} = $app["name_role"];
+					$data['list_personal_leave'][$i]{'app_reason_reject_'.$j} = $app["reason_reject"];
+					$j++;
+				}
+			}
+			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype);
+			$i++;
+		}
         $this->load->view('em_personal_leave_v', $data);
     }
 
@@ -1022,6 +1043,17 @@ class Employee extends CI_Controller{
         }
         return $days;
     }
+
+	private function joint_holiday() {
+		$list_holiday = $this->holiday_m->select_all();
+		$all_holiday = array();
+
+		foreach($list_holiday as $holiday){
+			$all_holiday[] = $holiday['date_holiday'];
+		}
+
+		return $all_holiday;
+	}
 
     private function generateRandomString($length = 6) {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';

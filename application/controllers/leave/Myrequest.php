@@ -15,6 +15,7 @@ class Myrequest extends CI_Controller{
         $this->load->model('leave_m', 'leave_m');
         $this->load->model('approval_m', 'approval_m');
         $this->load->model('employment_m', 'employment_m');
+		$this->load->model('holiday_m', 'holiday_m');
 //        $this->load->model('websetting_m', 'web_set');
 
         if($this->logged_in()){
@@ -25,6 +26,8 @@ class Myrequest extends CI_Controller{
     public function index(){
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
+		if ($data['current_user'][0]['id_city'] == 1 || $data['current_user'][0]['id_city'] == 2) $weekendtype = "satsun";
+		else $weekendtype = "sun";
 
         if($this->session->userdata('submission_date')) $this->session->unset_userdata('submission_date');
         if($this->session->userdata('start_date')) $this->session->unset_userdata('start_date');
@@ -33,7 +36,7 @@ class Myrequest extends CI_Controller{
         if($this->session->userdata('description')) $this->session->unset_userdata('description');
         $data['typeorder'] = 0;
 
-        $config["base_url"] = base_url() . "leave/myrequest/";
+        $config["base_url"] = base_url() . "leave/myrequest/index/";
         $config["total_rows"] = $this->leave_m->jum_leave_personal($id_current_user);
         $config["per_page"] = 10;
         $config['next_page'] = '&gt;';
@@ -64,6 +67,7 @@ class Myrequest extends CI_Controller{
         foreach ($data['list_personal_leave'] as $leave){
             $id_leave = $data['list_personal_leave'][$i]['id_leave'];
             $approval = $this->approval_m->select_leave_approval($id_leave);
+
             if ($approval != "") {
                 $j = 1;
                 foreach ($approval as $app) {
@@ -73,7 +77,10 @@ class Myrequest extends CI_Controller{
                     $j++;
                 }
             }
+			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype);
+
             $i++;
+
         }
         $this->load->view('lv_myrequest_v', $data);
 
@@ -81,6 +88,9 @@ class Myrequest extends CI_Controller{
 
     public function search($sortby, $sorttype) {
         $id_current_user = $this->session->userdata('id_employee');
+		$data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
+		if ($data['current_user'][0]['id_city'] == 1 || $data['current_user'][0]['id_city'] == 2) $weekendtype = "satsun";
+		else $weekendtype = "sun";
 
         if($this->uri->segment(6)) $page = ($this->uri->segment(6));
         else $page = 0;
@@ -149,6 +159,23 @@ class Myrequest extends CI_Controller{
             $new_kondisi = "WHERE ". $kondisi;
 
             $data['list_personal_leave'] = $this->leave_m->select_allpaging_personal_search ($new_kondisi, $orderby, $ordertype, $per_page, $page);
+
+			$i = 0;
+			foreach ($data['list_personal_leave'] as $leave){
+				$id_leave = $data['list_personal_leave'][$i]['id_leave'];
+				$approval = $this->approval_m->select_leave_approval($id_leave);
+				if ($approval != "") {
+					$j = 1;
+					foreach ($approval as $app) {
+						$data['list_personal_leave'][$i]{'app_status_'.$j} = $app["ap_status"];
+						$data['list_personal_leave'][$i]{'app_name_'.$j} = $app["name_role"];
+						$data['list_personal_leave'][$i]{'app_reason_reject_'.$j} = $app["reason_reject"];
+						$j++;
+					}
+				}
+				$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype);
+				$i++;
+			}
         }
 
         $config["base_url"] = base_url() . "leave/myrequest/search/".$sortby."/".$sorttype."/"; //ngambil var url tanpa diproses, karna jika pindah halaman tidak perlu ganti flag
@@ -192,6 +219,7 @@ class Myrequest extends CI_Controller{
                     $j++;
                 }
             }
+			$data['list_personal_leave'][$i]['days'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype);
             $i++;
         }
 
@@ -301,6 +329,17 @@ class Myrequest extends CI_Controller{
         }
         return $days;
     }
+
+	private function joint_holiday() {
+		$list_holiday = $this->holiday_m->select_all();
+		$all_holiday = array();
+
+		foreach($list_holiday as $holiday){
+			$all_holiday[] = $holiday['date_holiday'];
+		}
+
+		return $all_holiday;
+	}
 
     private function today_datetime(){
         $datestring = '%Y-%m-%d %h:%i:%s';

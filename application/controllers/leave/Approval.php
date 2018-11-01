@@ -15,6 +15,7 @@ class Approval extends CI_Controller{
         $this->load->model('leave_m', 'leave_m');
         $this->load->model('approval_m', 'approval_m');
         $this->load->model('employment_m', 'employment_m');
+		$this->load->model('holiday_m', 'holiday_m');
 //        $this->load->model('websetting_m', 'web_set');
 
         if($this->logged_in()){
@@ -250,6 +251,9 @@ class Approval extends CI_Controller{
         $data['detail_employee'] = $this->member_m->select_detil_employee($id_user_leave);
         $data['detail_employment'] = $this->employment_m->select_detil_employment_active($id_user_leave);
 
+		if ($data['detail_employee'][0]['id_city'] == 1 || $data['detail_employee'][0]['id_city'] == 2) $weekendtype = "satsun";
+		else $weekendtype = "sun";
+
         $data['startnum'] = 1;
         $id_current_role = $data['detail_member'][0]['id_role'];
         if ($id_current_role == 1 || $id_current_role == 4) {
@@ -334,6 +338,12 @@ class Approval extends CI_Controller{
             }
 
         }
+
+		$i = 0;
+		foreach ($data['detail_leave'] as $leave){
+			$data['detail_leave'][$i]['day'] = $this->count_days($data['detail_leave'][$i]['start_date'], $data['detail_leave'][$i]['end_date'], $weekendtype);
+			$i++;
+		}
 
         $this->load->view('lv_approval_detail_v', $data);
     }
@@ -502,6 +512,17 @@ class Approval extends CI_Controller{
         }
         return $days;
     }
+
+	private function joint_holiday() {
+		$list_holiday = $this->holiday_m->select_all();
+		$all_holiday = array();
+
+		foreach($list_holiday as $holiday){
+			$all_holiday[] = $holiday['date_holiday'];
+		}
+
+		return $all_holiday;
+	}
 
     private function cek_jum_quota($id_employee){
         $current_employment = $this->employment_m->select_detil_employment_active($id_employee);

@@ -131,7 +131,7 @@
                                                         <td><?php echo $row['submission_date']; ?></td>
                                                         <td><?php echo $row['start_date']; ?></td>
                                                         <td><?php echo $row['end_date']; ?></td>
-                                                        <td><?php echo $row['days']; ?></td>
+                                                        <td><?php echo $row['day']; ?></td>
                                                         <td><?php echo $row['description'];
 //                                                            if ($row['leave_quota_ext'] > 0) {
 //                                                                echo "<br /><i style='font-size: 11px;'>inc Extended Leave Quota ".$row['leave_quota_ext']." day/s</i>";

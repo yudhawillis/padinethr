@@ -73,6 +73,9 @@
                                                         Leave Explanation
                                                     </a>
                                                 </td>
+												<td>
+													Days
+												</td>
                                                 <td>
                                                     Status
                                                 </td>
@@ -119,6 +122,7 @@
                                                     >
                                                 </td>
                                                 <td></td>
+												<td></td>
                                                 <!--                                                <td>--><?php
                                                 //
                                                 //                                                    $options = array(
@@ -155,6 +159,7 @@
                                                         //                                                        }
                                                         ?>
                                                     </td>
+													<td><?php echo $row['day']; ?></td>
                                                     <td>
                                                         <?php
 														if ($row['cancel_status']==1){
