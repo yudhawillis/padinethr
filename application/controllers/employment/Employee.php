@@ -804,12 +804,7 @@ class Employee extends CI_Controller{
             redirect(base_url().'employment/employee/detil_data/'.$id_employee);
         }
         else {
-			$current_employment = $this->employment_m->select_detil_employment_active($id_employee);
-			if(empty($current_employment)){
-				$leave_quota_ext_set = 3;
-			} else {
-				$leave_quota_ext_set = $current_employment[0]['leave_quota_ext'];
-			}
+
 
             $data_formprof['id_level'] = $this->input->post('id_level');
             $data_formprof['id_city'] = $this->input->post('id_city');
@@ -819,7 +814,16 @@ class Employee extends CI_Controller{
             $data_formprof['description'] = $this->input->post('description');
             $data_formprof['status'] = 1;
 
-            $data_formprof['leave_quota'] = $this->count_level_quota($id_employee, $this->input->post('id_level'));
+
+            $current_employment = $this->employment_m->select_detil_employment_active($id_employee);
+            if(empty($current_employment)){
+                $leave_quota_ext_set = 3;
+                $data_formprof['leave_quota'] = $this->count_level_quota_prorate($data_formprof['id_level'], $data_formprof['tgl_mulai']);
+            } else {
+                $leave_quota_ext_set = $current_employment[0]['leave_quota_ext'];
+                $data_formprof['leave_quota'] = $this->count_level_quota($id_employee, $this->input->post('id_level'), $data_formprof['tgl_mulai']);
+            }
+
             $data_formprof['leave_quota_ext'] = $leave_quota_ext_set;
             $data_formprof['id_employee'] = $id_employee;
             $data_formprof['division'] = $current_employment[0]['division'];
@@ -884,7 +888,24 @@ class Employee extends CI_Controller{
         $this->employment_m->update_employment($id_employment, $data_ad);
     }
 
-    private function count_level_quota($id_employee, $id_level){
+    private function count_level_quota_prorate($id_level_employee, $tgl_mulai){
+        $get_cur_quota = $this->level_m->select_detil_level($id_level_employee);
+        $cur_level_quota = $get_cur_quota[0]['level_quota']; //level lama/skrg
+
+        $get_month_cur = date('m', strtotime($tgl_mulai));
+        $number_date = date('j', strtotime($tgl_mulai));
+        if ($number_date > 14) $month_cur = $get_month_cur;
+        else $month_cur = $get_month_cur - 1;
+        $month_remaining = 12 - $month_cur;
+
+        $count_current_month = round(($month_remaining / 12),2);
+        $result_current = $count_current_month * $cur_level_quota;
+
+        $result = round($result_current, 0);
+        return $result;
+    }
+
+    private function count_level_quota($id_employee, $id_level, $tgl_mulai){
         $current_employment = $this->employment_m->select_detil_employment_active($id_employee);
         $jum_employment = $this->employment_m->jum_employment_staff($id_employee);
 
@@ -912,7 +933,7 @@ class Employee extends CI_Controller{
                 $post_level_quota = $get_post_quota[0]['level_quota']; //level terbaru
 
                 $get_month_cur = date('m');
-                $number_date = date('j', strtotime($data_formprof['tgl_mulai']));
+                $number_date = date('j', strtotime($tgl_mulai));
                 if ($number_date > 14) $month_cur = $get_month_cur;
                 else $month_cur = $get_month_cur - 1;
                 $month_remaining = 12 - $month_cur;
