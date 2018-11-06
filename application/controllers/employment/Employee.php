@@ -826,7 +826,6 @@ class Employee extends CI_Controller{
 
             $data_formprof['leave_quota_ext'] = $leave_quota_ext_set;
             $data_formprof['id_employee'] = $id_employee;
-            $data_formprof['division'] = $current_employment[0]['division'];
 
 			$data_formup['status'] = 0;
 			$data_formup['tgl_berakhir'] = $data_formprof['tgl_mulai'];
