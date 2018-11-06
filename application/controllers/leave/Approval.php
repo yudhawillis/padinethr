@@ -382,9 +382,6 @@ class Approval extends CI_Controller{
         $current_quota = $this->cek_jum_quota($data_formap['id_employee']);
         $current_quota_ext = $this->cek_jum_quota_ext($data_formap['id_employee']);
 
-//        echo $current_quota."<br>";
-//		echo $current_quota_ext."<br>";
-
         $this->count_request_leave($id_leave, $dispensation_quota, $current_quota, $current_quota_ext);
 
         $this->session->set_flashdata('pesan', 'Anda telah berhasil melakukan <i>approve leave</i>.');
@@ -459,7 +456,7 @@ class Approval extends CI_Controller{
                 $payroll_deduction = abs($cek_req_quota_ext);
             } else {
                 //jika hasilnya 0 atau lebih dari nol maka tetap sebagai hasil positif dan mengupdate $debt_leave_quota
-                $debt_leave_quota = $cek_req_quota_ext;
+                $debt_leave_quota = abs($cek_req_quota_ext);
             }
             $cek_leave_quota_ext = $current_quota_ext - $debt_leave_quota; //karena $debt_leave_quota adalah sisa hasil dikurangi $reqleave
             if($cek_leave_quota_ext <= 0){
