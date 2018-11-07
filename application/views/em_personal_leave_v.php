@@ -83,7 +83,7 @@
                                                 <td></td>
                                             </tr>
                                             </thead>
-                                            <form method="post" action="<?php echo base_url(); ?>employment/employee/personal_adjustment_search/<?php echo $selected_employee_id; ?>/orby/ortype/" />
+                                            <form method="post" action="<?php echo base_url(); ?>employment/employee/personal_leave_search/<?php echo $selected_employee_id; ?>/orby/ortype/" />
                                             <tr>
                                                 <td></td>
                                                 <td><input type="text" name="search_submission_date" class="form-control" placeholder="..."<?php

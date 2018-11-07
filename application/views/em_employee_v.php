@@ -85,9 +85,9 @@
                                             <tr>
                                                 <td></td>
 												<td></td>
-                                                <td><input type="text" name="search_nik_karyawan" class="form-control" placeholder="..."<?php
-                                                    if(isset($nik_karyawan)){
-                                                        echo "value = '".$nik_karyawan."'";
+                                                <td><input type="text" name="search_nik_employee" class="form-control" placeholder="..."<?php
+                                                    if(isset($nik_employee)){
+                                                        echo "value = '".$nik_employee."'";
                                                     }
                                                     ?>
                                                     >

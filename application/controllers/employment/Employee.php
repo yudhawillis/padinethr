@@ -34,6 +34,7 @@ class Employee extends CI_Controller{
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
 
+        if($this->session->userdata('new_kondisi')) $this->session->unset_userdata('new_kondisi');
         if($this->session->userdata('nik_employee')) $this->session->unset_userdata('nik_employee');
         if($this->session->userdata('fullname')) $this->session->unset_userdata('fullname');
         if($this->session->userdata('level_name')) $this->session->unset_userdata('level_name');
@@ -353,6 +354,10 @@ class Employee extends CI_Controller{
         $data['selected_employee_id'] = $id_employee;
         $data['active'] = "personal_leave";
 
+        if ($data['current_user'][0]['id_city'] == 1 || $data['current_user'][0]['id_city'] == 2) $weekendtype = "satsun";
+        else $weekendtype = "sun";
+        $data['active'] = "personal_leave";
+
         if($this->uri->segment(8)) $page = ($this->uri->segment(8));
         else $page = 0;
         $per_page = 10;
@@ -375,14 +380,14 @@ class Employee extends CI_Controller{
             $data['submission_date'] = $this->input->post('search_submission_date');
             $data['start_date'] = $this->input->post('search_start_date');
             $data['end_date'] = $this->input->post('search_end_date');
-            $data['days'] = $this->input->post('search_days');
+//            $data['days'] = $this->input->post('search_days');
             $data['description'] = $this->input->post('search_description');
 
             $datasrc = array(
                 'submission_date'  => $data['submission_date'],
                 'start_date'  => $data['start_date'],
                 'end_date'  => $data['end_date'],
-                'days'  => $data['days'],
+//                'days'  => $data['days'],
                 'description'  => $data['description'],
             );
             $this->session->set_userdata($datasrc);
@@ -390,7 +395,7 @@ class Employee extends CI_Controller{
             if($data['submission_date'] != "") $kondisi[] = "submission_date LIKE '%".$data['submission_date']."%'";
             if($data['start_date'] != "") $kondisi[] = "start_date LIKE '%".$data['start_date']."%'";
             if($data['end_date'] != "") $kondisi[] = "end_date LIKE '%".$data['end_date']."%'";
-            if($data['days'] != "") $kondisi[] = "days LIKE '%".$data['days']."%'";
+//            if($data['days'] != "") $kondisi[] = "days LIKE '%".$data['days']."%'";
             if($data['description'] != "") $kondisi[] = "description LIKE '%".$data['description']."%'";
             $kondisi[] = "id_employee = ".$id_employee."";
 //            var_dump($kondisi);
@@ -406,6 +411,23 @@ class Employee extends CI_Controller{
                 $this->session->set_userdata('new_kondisi',$new_kondisi);
                 $data['list_personal_leave'] = $this->leave_m->select_allpaging_personal_search ($new_kondisi, $orderby, $ordertype, $per_page, $page);
 
+                $i = 0;
+                foreach ($data['list_personal_leave'] as $leave){
+                    $id_leave = $data['list_personal_leave'][$i]['id_leave'];
+                    $approval = $this->approval_m->select_leave_approval($id_leave);
+                    if ($approval != "") {
+                        $j = 1;
+                        foreach ($approval as $app) {
+                            $data['list_personal_leave'][$i]{'app_status_'.$j} = $app["ap_status"];
+                            $data['list_personal_leave'][$i]{'app_name_'.$j} = $app["name_role"];
+                            $data['list_personal_leave'][$i]{'app_reason_reject_'.$j} = $app["reason_reject"];
+                            $j++;
+                        }
+                    }
+                    $data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype);
+                    $i++;
+                }
+
 
             }
         }
@@ -415,13 +437,29 @@ class Employee extends CI_Controller{
             $data['submission_date'] = $this->session->userdata('submission_date');
             $data['start_date'] = $this->session->userdata('start_date');
             $data['end_date'] = $this->session->userdata('end_date');
-            $data['days'] = $this->session->userdata('days');
+//            $data['days'] = $this->session->userdata('days');
             $data['description'] = $this->session->userdata('description');
 
             $kondisi = "id_employee = ".$id_employee."";
             $new_kondisi = "WHERE ". $kondisi;
 
             $data['list_personal_leave'] = $this->leave_m->select_allpaging_personal_search ($new_kondisi, $orderby, $ordertype, $per_page, $page);
+            $i = 0;
+            foreach ($data['list_personal_leave'] as $leave){
+                $id_leave = $data['list_personal_leave'][$i]['id_leave'];
+                $approval = $this->approval_m->select_leave_approval($id_leave);
+                if ($approval != "") {
+                    $j = 1;
+                    foreach ($approval as $app) {
+                        $data['list_personal_leave'][$i]{'app_status_'.$j} = $app["ap_status"];
+                        $data['list_personal_leave'][$i]{'app_name_'.$j} = $app["name_role"];
+                        $data['list_personal_leave'][$i]{'app_reason_reject_'.$j} = $app["reason_reject"];
+                        $j++;
+                    }
+                }
+                $data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype);
+                $i++;
+            }
         }
 
         $config["base_url"] = base_url() . "employment/employee/personal_leave_search/".$id_employee."/".$sortby."/".$sorttype."/"; //ngambil var url tanpa diproses, karna jika pindah halaman tidak perlu ganti flag

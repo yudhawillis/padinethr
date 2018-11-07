@@ -28,7 +28,7 @@ class Jointholiday extends CI_Controller{
 
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
-
+        if($this->session->userdata('new_kondisi')) $this->session->unset_userdata('new_kondisi');
         if($this->session->userdata('date_holiday')) $this->session->unset_userdata('date_holiday');
         if($this->session->userdata('description')) $this->session->unset_userdata('description');
         $data['typeorder'] = 0;
@@ -89,13 +89,13 @@ class Jointholiday extends CI_Controller{
             $ordertype="asc";
         }
         if($this->input->post()){
-            $data['date_holiday'] = $this->input->post('date_holiday');
-            $data['description'] = $this->input->post('description');
+
+            $data['date_holiday'] = $this->input->post('search_date_holiday');
+            $data['description'] = $this->input->post('search_description');
 
             $datasrc = array(
-                'e'  => $data['nama_speedtes'],
-                'status_aktif'  => $data['status_aktif'],
-
+                'date_holiday'  => $data['date_holiday'],
+                'description'  => $data['description'],
             );
             $this->session->set_userdata($datasrc);
             $kondisi = array();
@@ -103,7 +103,7 @@ class Jointholiday extends CI_Controller{
             if($data['description'] != "") $kondisi[] = "description LIKE '%".$data['description']."%'";
 //            var_dump($kondisi);
             if(empty($kondisi)){
-                redirect(base_url().'leave/myrequest');
+                redirect(base_url().'leave/jointholiday');
             }
             else {
                 if (count($kondisi)>1) $new_kondisi = implode(" AND ",$kondisi);
@@ -151,6 +151,7 @@ class Jointholiday extends CI_Controller{
         $data['tipe_print'] = 'search';//untuk button print
         $data['sortby'] = $sortby;//untuk button print
         $data['sorttype'] = $sorttype;//untuk button print
+        var_dump($new_kondisi);
         $this->load->view('lv_jointholiday_v', $data);
 
     }

@@ -145,8 +145,11 @@ class Leave_m extends CI_Model{
         return $jum;
     }
     function jum_leave_search($where){
-        $sql = " SELECT * FROM leave_staff
-              ".$where."
+        $sql = " SELECT lv.*, e.*, em.*, lv.description as leave_description 
+                FROM leave_staff lv
+                LEFT JOIN employee e ON lv.id_employee = e.id_employee
+                LEFT JOIN employment em ON e.id_employee = em.id_employee
+                ".$where."
         ";
         $query = $this->db->query($sql);
         $jum = $query->num_rows();

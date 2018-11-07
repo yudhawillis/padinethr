@@ -31,11 +31,13 @@ class Approval extends CI_Controller{
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
 
+        if($this->session->userdata('new_kondisi')) $this->session->unset_userdata('new_kondisi');
         if($this->session->userdata('submission_date')) $this->session->unset_userdata('submission_date');
         if($this->session->userdata('start_date')) $this->session->unset_userdata('start_date');
         if($this->session->userdata('end_date')) $this->session->unset_userdata('end_date');
         if($this->session->userdata('fullname')) $this->session->unset_userdata('fullname');
         if($this->session->userdata('description')) $this->session->unset_userdata('description');
+
         $data['typeorder'] = 0;
 
         $config["base_url"] = base_url() . "leave/approval/";
@@ -154,19 +156,22 @@ class Approval extends CI_Controller{
                 redirect(base_url().'leave/approval');
             }
             else {
+
                 if (count($kondisi)>1) $new_kondisi = implode(" AND ",$kondisi);
                 else if (count($kondisi)==1) $new_kondisi = implode($kondisi);
 
-                //echo $new_kondisi;
+                echo $id_current_role;
                 $new_kondisi = "WHERE ". $new_kondisi;
                 $this->session->set_userdata('new_kondisi',$new_kondisi);
 
                 if ($id_current_role == 4) { //membatasi supervisor
+
                     $data['list_leave'] = $this->leave_m->select_allpaging_search_superior($new_kondisi, $orderby, $ordertype, $per_page, $page, $id_current_user);
                 } else if ($id_current_role == 1 || $id_current_role == 2) { //membatasi hr
+
                     $data['list_leave'] = $this->leave_m->select_allpaging_search($new_kondisi, $orderby, $ordertype, $per_page, $page);
                 }
-//                $data['list_leave'] = $this->leave_m->select_allpaging_search ($new_kondisi, $orderby, $ordertype, $per_page, $page);
+                $data['list_leave'] = $this->leave_m->select_allpaging_search ($new_kondisi, $orderby, $ordertype, $per_page, $page);
 
             }
         }
@@ -187,6 +192,7 @@ class Approval extends CI_Controller{
                 $data['list_leave'] = $this->leave_m->select_allpaging_search($new_kondisi, $orderby, $ordertype, $per_page, $page);
             }
             $data['list_leave'] = $this->leave_m->select_allpaging_search ($new_kondisi, $orderby, $ordertype, $per_page, $page);
+
         }
 
         $config["base_url"] = base_url() . "leave/approval/search/".$sortby."/".$sorttype."/"; //ngambil var url tanpa diproses, karna jika pindah halaman tidak perlu ganti flag
@@ -219,6 +225,7 @@ class Approval extends CI_Controller{
 
         $i = 0;
         foreach ($data['list_leave'] as $leave){
+
             $id_leave = $data['list_leave'][$i]['id_leave'];
             $approval = $this->approval_m->select_leave_approval($id_leave);
             if ($approval != "") {

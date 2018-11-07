@@ -69,14 +69,14 @@
                                             <form method="post" action="<?php echo base_url(); ?>leave/jointholiday/search/orby/ortype/" />
                                             <tr>
                                                 <td></td>
-                                                <td><input type="text" name="search_nama_speedtes" class="form-control" placeholder="..."<?php
+                                                <td><input type="text" name="search_date_holiday" class="form-control" placeholder="..."<?php
                                                     if(isset($date_holiday)){
                                                         echo "value = '".$date_holiday."'";
                                                     }
                                                     ?>
                                                     >
                                                 </td>
-                                                <td><input type="text" name="search_nama_speedtes" class="form-control" placeholder="..."<?php
+                                                <td><input type="text" name="search_description" class="form-control" placeholder="..."<?php
                                                     if(isset($description)){
                                                         echo "value = '".$description."'";
                                                     }

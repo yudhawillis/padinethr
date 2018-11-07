@@ -29,6 +29,7 @@ class Myrequest extends CI_Controller{
 		if ($data['current_user'][0]['id_city'] == 1 || $data['current_user'][0]['id_city'] == 2) $weekendtype = "satsun";
 		else $weekendtype = "sun";
 
+        if($this->session->userdata('new_kondisi')) $this->session->unset_userdata('new_kondisi');
         if($this->session->userdata('submission_date')) $this->session->unset_userdata('submission_date');
         if($this->session->userdata('start_date')) $this->session->unset_userdata('start_date');
         if($this->session->userdata('end_date')) $this->session->unset_userdata('end_date');
