@@ -10,6 +10,12 @@ class Approval_m extends CI_Model{
         $this->db->insert('approval', $data);
     }
 
+    function jum_approval_personal_leave($id_leave){
+        $query = $this->db->get_where('approval', array('id_leave' => $id_leave));//namatabel
+        $jum = $query->num_rows();
+        return $jum;
+    }
+
     function select_leave_approval($id_leave){
         $sql = 'SELECT ap.*, e.*, e2.*, e2.fullname as ap_fullname, r.*, ap.status as ap_status, lv.*, ea.*
             FROM approval ap 

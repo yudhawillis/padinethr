@@ -15,6 +15,7 @@ class Myschedule extends CI_Controller{
         $this->load->model('leave_m', 'leave_m');
         $this->load->model('holiday_m', 'holiday_m');
         $this->load->model('employment_m', 'employment_m');
+        $this->load->model('approval_m', 'approval_m');
 //        $this->load->model('websetting_m', 'web_set');
 
         if($this->logged_in()){
@@ -38,9 +39,81 @@ class Myschedule extends CI_Controller{
             $this->session->set_flashdata('pesan', 'Anda tidak diperbolehkan melakukan request cuti.');
             redirect(base_url().'leave/myschedule/blocked_request');
         }
+ /////////-----------------garapan on demand---------------------------------------------------
+
 
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
+
+        $first_employment = $this->employment_m->select_first_row_employment($id_current_user);
+        $first_employment = json_decode(json_encode($first_employment),true); //konversi stdclass to array
+        echo $first_employment['tgl_mulai'];
+        //echo $first_employment;
+        var_dump($first_employment);
+
+
+// %d outputs the number of days that is not already covered by the month
+        $date_start_string = "2013-03-15";
+        $date_start = date_create($date_start_string);
+        date_add($date_start,date_interval_create_from_date_string("1 year"));
+        $date_one_year = date_format($date_start,"Y-m-d");
+        echo "<br>".$date_start_string."<br />";
+        echo $date_one_year."<br />";
+
+        if( strtotime('now') >= strtotime($date_one_year) ) {
+            //cek tahun -> if tahun selisih dua tahun maka januari prorate
+            //jika kurang dari satu tahun maka prorate current month
+            $year_current = date('y');
+            $get_year_date_one_year = date('y', strtotime($date_one_year));
+
+            if ($get_year_date_one_year - $year_current >=1 ){
+
+            }
+            else {
+
+            }
+        } else {
+            $leave_quota = 0;
+            //tanpa cuti
+        }
+
+
+
+
+            if ($data['current_user'][0]['id_city'] == 1 || $data['current_user'][0]['id_city'] == 2) $weekendtype = "satsun";
+        else $weekendtype = "sun";
+
+
+        ///select semua leave
+        /// //belum ada filter berdasarkan current year
+        $list_personal_leave = $this->leave_m->select_personal_leave_non_cancel($id_current_user);
+        if (!empty($list_personal_leave)){
+            $i=0;
+            foreach ($list_personal_leave as $leave){
+                $id_leave = $list_personal_leave[$i]['id_leave'];
+                $jum_approval = $this->approval_m->jum_approval_personal_leave($id_leave);
+                if ($jum_approval == 2){
+                    $list_personal_leave[$i]['status_approve'] = TRUE;
+                } else {
+                    $list_personal_leave[$i]['status_approve'] = FALSE;
+                }
+                $list_personal_leave[$i]['day'] = $this->count_days($list_personal_leave[$i]['start_date'], $list_personal_leave[$i]['end_date'], $weekendtype);
+
+                $i++;
+            }
+        }
+
+        var_dump($list_personal_leave);
+
+/////////-----------------garapan on demand - END ---------------------------------------------------
+
+
+
+
+
+
+
+
 
         $data['current_quota'] = $this->cek_jum_quota();
         $data['current_quota_ext'] = $this->cek_jum_quota_ext();

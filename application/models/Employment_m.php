@@ -79,6 +79,12 @@ class Employment_m extends CI_Model{
         return $jum;
     }
 
+    function select_first_row_employment($id_employee){
+        $query = $this->db->get_where('employment', array('id_employee' => $id_employee));//namatabel
+        $row = $query->first_row();
+        return $row;
+    }
+
     function select_all_employee($id_employee){
         $sql = 'SELECT e.*, r.*, l.*, c.*, e.status as employment_status, em.*
             FROM employment e      
