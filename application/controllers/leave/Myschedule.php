@@ -65,9 +65,21 @@ class Myschedule extends CI_Controller{
             //jika kurang dari satu tahun maka prorate current month
             $year_current = date('y');
             $get_year_date_one_year = date('y', strtotime($date_one_year));
+            $personal_employment = $this->employment_m->employment_staff($id_current_user);
+            $jum_personal_employment = $this->employment_m->jum_employment_staff($id_current_user);
 
             if ($get_year_date_one_year - $year_current >=1 ){
+                //mengecek quota leave sekarang berdasar level
+                //pengecekan jumlah emlpoyment yang mempengaruhi prorate yang kemudian ,mempengaruhi quota leave
+                //mengambil history leave, dispensasi dan cuti bersama
+                $i=0;
+                foreach($personal_employment as $emp){
+                    $select_level = $this->level_m->select_detil_level($emp['id_level']);
+                    $quota_leave = $select_level[$i]['level_quota'];
+                    $list_quota[$i] = $quota_leave;
 
+                    $i++;
+                }
             }
             else {
 
