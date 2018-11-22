@@ -52,7 +52,7 @@ class Myschedule extends CI_Controller{
         var_dump($first_employment);
 
 
-// %d outputs the number of days that is not already covered by the month
+// %d outputs the number of days that is not aclready covered by the month
         $date_start_string = "2013-03-15";
         $date_start = date_create($date_start_string);
         date_add($date_start,date_interval_create_from_date_string("1 year"));
@@ -65,24 +65,35 @@ class Myschedule extends CI_Controller{
             //jika kurang dari satu tahun maka prorate current month
             $year_current = date('y');
             $get_year_date_one_year = date('y', strtotime($date_one_year));
-            $personal_employment = $this->employment_m->employment_staff($id_current_user);
-            $jum_personal_employment = $this->employment_m->jum_employment_staff($id_current_user);
+			$get_month_date_one_year = date('n', strtotime($date_one_year));
+			echo $get_month_date_one_year;
+			$start_date_select_current_year = $year_current."-01-01";
+			$end_date_select_current_year = $year_current."-12-31";
 
-            if ($get_year_date_one_year - $year_current >=1 ){
-                //mengecek quota leave sekarang berdasar level
-                //pengecekan jumlah emlpoyment yang mempengaruhi prorate yang kemudian ,mempengaruhi quota leave
-                //mengambil history leave, dispensasi dan cuti bersama
-                $i=0;
-                foreach($personal_employment as $emp){
-                    $select_level = $this->level_m->select_detil_level($emp['id_level']);
-                    $quota_leave = $select_level[$i]['level_quota'];
-                    $list_quota[$i] = $quota_leave;
+            $personal_employment_year = $this->employment_m->employment_staff_year($id_current_user, $start_date_select_current_year, $end_date_select_current_year);
+            $jum_personal_employment_year = $this->employment_m->jum_employment_staff_year($id_current_user, $start_date_select_current_year, $end_date_select_current_year);
+			$list_emp_level = array();
+			$bulan_akhir = 12;
 
-                    $i++;
+            if ($get_year_date_one_year - $year_current == 1 ){
+            	// harus dibedakan antara employment tahun pertama
+				// karena tahun pertama adalah dihitung tgl start kebawah dari employment pertama
+				// sedangkan tahun kedua dihitung per januari, dan dihitung dari employmen kedua dst
+                foreach($personal_employment_year as $emp){
+                    $list_emp_level[] = $emp['id_level'];
+					$list_month_employment[0] = 1;
+					$list_month_employment[] =  date('n', strtotime($emp['tgl_start']));
                 }
+                $list_month_employment = array();
+                // pengecekan next array untuk menghitung jarak antar bulan
+				// berlaku jika ada 3 array / 3 bulan dalam satu tahun
+				// array pertama pasti januari. array bulan kedua menghitung jumlah bulan sampai bulan array ke tiga
             }
-            else {
-
+            else if ($get_year_date_one_year - $year_current >= 2 ){//juka tahun kedua
+				foreach($personal_employment_year as $emp){
+					$list_emp_level[] = $emp['id_level'];
+					$list_month_employment[] =  date('n', strtotime($emp['tgl_start']));
+				}
             }
         } else {
             $leave_quota = 0;

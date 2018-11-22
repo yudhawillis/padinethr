@@ -86,6 +86,33 @@ class Employment_m extends CI_Model{
         return $result_array;
     }
 
+	function employment_staff_year($id_employee, $start_date, $end_date){
+		$sql = 'SELECT * FROM employment
+			WHERE ((tgl_mulai BETWEEN "'.$start_date.'"
+			AND "'.$end_date.'")
+			OR (tgl_berakhir BETWEEN "'.$start_date.'"
+			AND "'.$end_date.'"))
+			AND id_employee = "'.$id_employee.'"
+			ORDER BY tgl_mulai ASC  
+            ';
+		$query = $this->db->query($sql);
+		$result_array = $query->result_array();
+		return $result_array;
+	}
+
+	function jum_employment_staff_year($id_employee, $start_date, $end_date){
+		$sql = 'SELECT * FROM employment
+			WHERE ((tgl_mulai BETWEEN "'.$start_date.'"
+			AND "'.$end_date.'")
+			OR (tgl_berakhir BETWEEN "'.$start_date.'"
+			AND "'.$end_date.'"))
+			AND id_employee = "'.$id_employee.'"
+            ';
+		$query = $this->db->query($sql);
+		$jum = $query->num_rows();
+		return $jum;
+	}
+
     function select_first_row_employment($id_employee){
         $query = $this->db->get_where('employment', array('id_employee' => $id_employee));//namatabel
         $row = $query->first_row();
