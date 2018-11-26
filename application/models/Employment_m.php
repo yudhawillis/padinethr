@@ -87,27 +87,39 @@ class Employment_m extends CI_Model{
     }
 
 	function employment_staff_year($id_employee, $start_date, $end_date){
-		$sql = 'SELECT * FROM employment
-			WHERE ((tgl_mulai BETWEEN "'.$start_date.'"
-			AND "'.$end_date.'")
-			OR (tgl_berakhir BETWEEN "'.$start_date.'"
-			AND "'.$end_date.'"))
+//		$sql = 'SELECT * FROM employment
+//			WHERE ((tgl_mulai BETWEEN "'.$start_date.'"
+//			AND "'.$end_date.'")
+//			OR (tgl_berakhir BETWEEN "'.$start_date.'"
+//			AND "'.$end_date.'"))
+//			AND id_employee = "'.$id_employee.'"
+//			ORDER BY tgl_mulai ASC
+//            ';
+		$sql = 'SELECT * FROM employment 
+			WHERE (tgl_berakhir < "'.$end_date.'"
+			OR tgl_berakhir is NULL)
 			AND id_employee = "'.$id_employee.'"
-			ORDER BY tgl_mulai ASC  
-            ';
+			ORDER BY tgl_mulai ASC
+		';
 		$query = $this->db->query($sql);
 		$result_array = $query->result_array();
 		return $result_array;
 	}
 
 	function jum_employment_staff_year($id_employee, $start_date, $end_date){
-		$sql = 'SELECT * FROM employment
-			WHERE ((tgl_mulai BETWEEN "'.$start_date.'"
-			AND "'.$end_date.'")
-			OR (tgl_berakhir BETWEEN "'.$start_date.'"
-			AND "'.$end_date.'"))
+//		$sql = 'SELECT * FROM employment
+//			WHERE ((tgl_mulai BETWEEN "'.$start_date.'"
+//			AND "'.$end_date.'")
+//			OR (tgl_berakhir BETWEEN "'.$start_date.'"
+//			AND "'.$end_date.'"))
+//			AND id_employee = "'.$id_employee.'"
+//            ';
+		$sql = 'SELECT * FROM employment 
+			WHERE (tgl_berakhir < "'.$end_date.'"
+			OR tgl_berakhir is NULL)
 			AND id_employee = "'.$id_employee.'"
-            ';
+			ORDER BY tgl_mulai ASC
+		';
 		$query = $this->db->query($sql);
 		$jum = $query->num_rows();
 		return $jum;
