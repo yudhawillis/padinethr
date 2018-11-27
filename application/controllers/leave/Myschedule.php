@@ -46,88 +46,7 @@ class Myschedule extends CI_Controller{
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
 
-        $first_employment = $this->employment_m->select_first_row_employment($id_current_user);
-        $first_employment = json_decode(json_encode($first_employment),true); //konversi stdclass to array
-        //echo $first_employment;
 
-
-// %d outputs the number of days that is not aclready covered by the month
-        //$date_start_string = "2013-03-15";
-		$date_start_string = $first_employment['tgl_mulai'];
-        $date_start = date_create($date_start_string);
-        date_add($date_start,date_interval_create_from_date_string("1 year"));
-        $date_one_year = date_format($date_start,"Y-m-d");
-
-        if( strtotime('now') >= strtotime($date_one_year) ) {
-
-            //cek tahun -> if tahun selisih dua tahun maka januari prorate
-            //jika kurang dari satu tahun maka prorate current month
-            $year_current = date('y');
-            $get_year_date_one_year = date('y', strtotime($date_one_year));
-
-			$start_date_select_current_year = $year_current."-01-01";
-			$end_date_select_current_year = $year_current."-12-31";
-
-            $personal_employment_year = $this->employment_m->employment_staff_year($id_current_user, $start_date_select_current_year, $end_date_select_current_year);
-			$list_emp_level = array();
-			$list_jum_leave = array();
-			$bulan_akhir = 12;
-			$list_month_employment_full_quota[0] = "1"; //sebagai bulan januari untuk array full quota
-			var_dump($personal_employment_year);
-			foreach($personal_employment_year as $emp){
-				$list_emp_level[] = $emp['id_level'];
-				$data_level = $this->level_m->select_detil_level($emp['id_level']);
-				$list_emp_quota[] = $data_level[0]['level_quota'];
-				$list_month_employment_full_quota[] = date('n', strtotime($emp['tgl_mulai']));;
-				$list_month_employment_prorate[] =  date('n', strtotime($emp['tgl_mulai']));
-			}
-			var_dump($list_month_employment_prorate);
-			if ($year_current - $get_year_date_one_year == 0) {
-				// harus dibedakan antara employment tahun pertama
-				// karena tahun pertama adalah dihitung tgl start kebawah dari employment pertama
-				// sedangkan tahun kedua dihitung per januari, dan dihitung dari employmen kedua dst
-				$i = 0;
-				foreach ($list_month_employment_prorate as $month) {
-					$j = $i + 1;
-
-					if (isset($list_month_employment_prorate[$j])) {
-						$jarak_bulan = $list_month_employment_prorate[$j] - $list_month_employment_prorate[$i];
-						$list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
-					} else {
-						$jarak_bulan = $bulan_akhir - $list_month_employment_prorate[$i] + 1 ;
-						$list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
-					}
-					$i++;
-				}
-				$total_jum_leave = array_sum($list_jum_leave);
-
-			} else if ($year_current - $get_year_date_one_year >= 1) {//jika tahun kedua
-				// pengecekan next array untuk menghitung jarak antar bulan
-				// berlaku jika ada 3 array / 3 bulan dalam satu tahun
-				// array pertama pasti januari. array bulan kedua menghitung jumlah bulan sampai bulan array ke tiga
-
-				$i = 0;
-				foreach ($list_month_employment_full_quota as $month) {
-					$j = $i + 1;
-					if (isset($list_month_employment_full_quota[$j])) {
-						$jarak_bulan = $list_month_employment_full_quota[$j] - $list_month_employment_full_quota[$i];
-						$list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
-					} else {
-						$jarak_bulan = $bulan_akhir - $list_month_employment_full_quota[$i] + 1;
-						$list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
-					}
-					$i++;
-				}
-				$total_jum_leave = array_sum($list_jum_leave);
-			} else {
-				$total_jum_leave = 0;
-				//tanpa cuti
-			}
-        } else {
-            $total_jum_leave = 0;
-            //tanpa cuti
-        }
-        echo round($total_jum_leave);
 
 
 
@@ -389,6 +308,96 @@ class Myschedule extends CI_Controller{
         }
         return $days;
     }
+
+    private function get_employment_quota_leave($id_current_user){
+		$first_employment = $this->employment_m->select_first_row_employment($id_current_user);
+		$first_employment = json_decode(json_encode($first_employment),true); //konversi stdclass to array
+
+		//$date_start_string = "2013-03-15";
+		$date_start_string = $first_employment['tgl_mulai'];
+		$date_start = date_create($date_start_string);
+		date_add($date_start,date_interval_create_from_date_string("1 year"));
+		$date_one_year = date_format($date_start,"Y-m-d");
+
+		if( strtotime('now') >= strtotime($date_one_year) ) {
+
+			//cek tahun -> if tahun selisih dua tahun maka januari prorate
+			//jika kurang dari satu tahun maka prorate current month
+			$year_current = date('y');
+			$get_year_date_one_year = date('y', strtotime($date_one_year));
+
+			$start_date_select_current_year = $year_current."-01-01";
+			$end_date_select_current_year = $year_current."-12-31";
+
+			$personal_employment_year = $this->employment_m->employment_staff_year($id_current_user, $start_date_select_current_year, $end_date_select_current_year);
+			$list_emp_level = array();
+			$list_jum_leave = array();
+			$bulan_akhir = 12;
+			$list_month_employment_full_quota[0] = "1"; //sebagai bulan januari untuk array full quota
+
+
+			foreach($personal_employment_year as $emp){
+				$list_emp_level[] = $emp['id_level'];
+				$data_level = $this->level_m->select_detil_level($emp['id_level']);
+				$list_emp_quota[] = $data_level[0]['level_quota'];
+
+				$number_month = date('n', strtotime($emp['tgl_mulai']));
+				$number_date = date('i', strtotime($emp['tgl_mulai']));
+				if ($number_date > 14) $month_number_new = $number_month + 1;
+				else $month_number_new = $number_month;
+
+				$list_month_employment_full_quota[] = $month_number_new;
+				$list_month_employment_prorate[] =  $month_number_new;
+			}
+
+			if ($year_current - $get_year_date_one_year == 0) {
+				// harus dibedakan antara employment tahun pertama
+				// karena tahun pertama adalah dihitung tgl start kebawah dari employment pertama
+				// sedangkan tahun kedua dihitung per januari, dan dihitung dari employmen kedua dst
+				$i = 0;
+				foreach ($list_month_employment_prorate as $month) {
+					$j = $i + 1;
+
+					if (isset($list_month_employment_prorate[$j])) {
+						$jarak_bulan = $list_month_employment_prorate[$j] - $list_month_employment_prorate[$i];
+						$list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
+					} else {
+						$jarak_bulan = $bulan_akhir - $list_month_employment_prorate[$i] + 1 ;
+						$list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
+					}
+					$i++;
+				}
+				$total_jum_leave = array_sum($list_jum_leave);
+
+			} else if ($year_current - $get_year_date_one_year >= 1) {//jika tahun kedua
+				// pengecekan next array untuk menghitung jarak antar bulan
+				// berlaku jika ada 3 array / 3 bulan dalam satu tahun
+				// array pertama pasti januari. array bulan kedua menghitung jumlah bulan sampai bulan array ke tiga
+
+				$i = 0;
+				foreach ($list_month_employment_full_quota as $month) {
+					$j = $i + 1;
+					if (isset($list_month_employment_full_quota[$j])) {
+						$jarak_bulan = $list_month_employment_full_quota[$j] - $list_month_employment_full_quota[$i];
+						$list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
+					} else {
+						$jarak_bulan = $bulan_akhir - $list_month_employment_full_quota[$i] + 1;
+						$list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
+					}
+					$i++;
+				}
+				$total_jum_leave = array_sum($list_jum_leave);
+			} else {
+				$total_jum_leave = 0;
+				//tanpa cuti
+			}
+		} else {
+			$total_jum_leave = 0;
+			//tanpa cuti
+		}
+
+		return round($total_jum_leave);
+	}
 
     private function joint_holiday() {
         $list_holiday = $this->holiday_m->select_all();
