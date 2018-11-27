@@ -47,6 +47,17 @@ class Adjustment_m extends CI_Model{
 
     }
 
+    function select_adjustment_employee_thisyear($id_employee, $start_date, $start_end){
+    	$sql = 'SELECT * FROM leave_adjustment
+				WHERE (datetime BETWEEN "'.$start_date.'"
+				AND "'.$start_end.'") 
+				AND id_employee = "'.$id_employee.'"';
+		$query = $this->db->query($sql);
+		$result = $query->result_array();
+
+		return $result;
+	}
+
     function jum_adjustment_personal($id_employee){
         $query = $this->db->get_where('leave_adjustment', array('id_employee' => $id_employee));//namatabel
         $jum = $query->num_rows();

@@ -47,8 +47,12 @@ class Myschedule extends CI_Controller{
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
         $leave_quota_employment = $this->get_employment_quota_leave($id_current_user);
         $jum_leave_personal = $this->get_leave_with_dispensation($id_current_user, $data['current_user'][0]['id_city']);
+        $jum_quota_adjustment = $this->get_adjustment_quota($id_current_user);
 
-        
+
+
+
+
 /////////-----------------garapan on demand - END ---------------------------------------------------
 
 
@@ -414,6 +418,37 @@ class Myschedule extends CI_Controller{
 
 		return $result;
 
+	}
+
+	private function get_adjustment_quota($id_current_user){
+		$year_current = date('y');
+		$start_date_select_current_year = $year_current."-01-01";
+		$end_date_select_current_year = $year_current."-12-31";
+
+		$list_adjusment_personal = $this->adjustment_m->select_adjustment_employee_thisyear($id_current_user, $start_date_select_current_year, $end_date_select_current_year);
+		$list_adjustment_quota = array();
+		$list_deduction_quota = array();
+		if(!empty($list_adjusment_personal)){
+
+			$i=0;
+			foreach ($list_adjusment_personal as $adj){
+				if($list_adjusment_personal[$i]['Adjustment']){
+					$list_adjustment_quota = $list_adjusment_personal[$i]['quota'];
+				}
+				else if ($list_adjusment_personal[$i]['Deduction']){
+					$list_deduction_quota = $list_adjusment_personal[$i]['quota'];
+				}
+				$i++;
+			}
+
+			$jum_adjustment_personal = array_sum($list_adjustment_quota);
+			$jum_deduction_quota = array_sum($list_deduction_quota);
+
+			$result =  $jum_adjustment_personal - $jum_deduction_quota;
+		}
+		else $result = 0;
+
+		return $result;
 	}
 
     private function joint_holiday() {
