@@ -40,44 +40,15 @@ class Myschedule extends CI_Controller{
             $this->session->set_flashdata('pesan', 'Anda tidak diperbolehkan melakukan request cuti.');
             redirect(base_url().'leave/myschedule/blocked_request');
         }
- /////////-----------------garapan on demand---------------------------------------------------
 
+ /////////-----------------garapan on demand---------------------------------------------------
 
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
+        $leave_quota_employment = $this->get_employment_quota_leave($id_current_user);
+        $jum_leave_personal = $this->get_leave_with_dispensation($id_current_user, $data['current_user'][0]['id_city']);
 
-
-
-
-
-
-            if ($data['current_user'][0]['id_city'] == 1 || $data['current_user'][0]['id_city'] == 2) $weekendtype = "satsun";
-        else $weekendtype = "sun";
-
-
-        ///select semua leave
-        /// //belum ada filter berdasarkan current year
-        $list_personal_leave = $this->leave_m->select_personal_leave_non_cancel($id_current_user);
-//        echo $id_current_user;
-//        var_dump($list_personal_leave);
-        if (!empty($list_personal_leave)){
-            $i=0;
-            foreach ($list_personal_leave as $leave){
-                $id_leave = $list_personal_leave[$i]['id_leave'];
-                $jum_approval = $this->approval_m->jum_approval_personal_leave($id_leave);
-                if ($jum_approval == 2){
-                    $list_personal_leave[$i]['status_approve'] = TRUE;
-                } else {
-                    $list_personal_leave[$i]['status_approve'] = FALSE;
-                }
-                $list_personal_leave[$i]['day'] = $this->count_days($list_personal_leave[$i]['start_date'], $list_personal_leave[$i]['end_date'], $weekendtype);
-
-                $i++;
-            }
-        }
-
-        var_dump($list_personal_leave);
-
+        
 /////////-----------------garapan on demand - END ---------------------------------------------------
 
 
@@ -397,6 +368,52 @@ class Myschedule extends CI_Controller{
 		}
 
 		return round($total_jum_leave);
+	}
+
+	private function get_leave_with_dispensation($id_current_user, $data_city_user){
+		if ($data_city_user == 1 || $data_city_user == 2) $weekendtype = "satsun";
+		else $weekendtype = "sun";
+
+		$year_current = date('y');
+		$start_date_select_current_year = $year_current."-01-01";
+		$end_date_select_current_year = $year_current."-12-31";
+
+		$list_personal_leave = $this->leave_m->select_personal_leave_non_cancel_thisyear($id_current_user, $start_date_select_current_year, $end_date_select_current_year);
+		$list_jum_personal_leave = array();
+		$list_jum_personal_dispensation = array();
+
+		if (!empty($list_personal_leave)){
+			$i=0;
+			foreach ($list_personal_leave as $leave){
+				$id_leave = $list_personal_leave[$i]['id_leave'];
+				$jum_approval = $this->approval_m->jum_approval_personal_leave($id_leave);
+				if ($jum_approval == 2){
+					$list_personal_leave[$i]['status_approve'] = TRUE;
+				} else {
+					$list_personal_leave[$i]['status_approve'] = FALSE;
+				}
+				$list_personal_leave[$i]['day'] = $this->count_days($list_personal_leave[$i]['start_date'], $list_personal_leave[$i]['end_date'], $weekendtype);
+
+				$i++;
+			}
+
+			$j=0;
+			foreach ($list_personal_leave as $leave){
+				if($list_personal_leave[$j]['status_approve'] == TRUE){
+					$list_jum_personal_leave[] = $this->count_days($list_personal_leave[$j]['start_date'], $list_personal_leave[$j]['end_date'], $weekendtype);
+					$list_jum_personal_dispensation[] = $list_personal_leave[$j]['dispensation_quota'];
+				}
+				$j++;
+			}
+		}
+
+		$final_jum_personal_leave = array_sum($list_jum_personal_leave);
+		$final_jum_personal_dispensation = array_sum($list_jum_personal_dispensation);
+
+		$result = $final_jum_personal_leave - $final_jum_personal_dispensation;
+
+		return $result;
+
 	}
 
     private function joint_holiday() {

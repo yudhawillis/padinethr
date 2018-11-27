@@ -184,14 +184,18 @@ class Leave_m extends CI_Model{
         return $result_array;
     }
 
-    function select_personal_leave_non_cancel($id_employee){
+    function select_personal_leave_non_cancel_thisyear($id_employee, $start_date, $end_date){
         $sql = 'SELECT l.*, r.*, e.*, e.status as leave_staff_status
             FROM leave_staff l
             LEFT JOIN employee e
             ON l.id_employee = e.id_employee
             LEFT JOIN role r
             ON e.id_role = r.id_role
-            WHERE e.id_employee = "'.$id_employee.'"
+            WHERE ((l.start_date BETWEEN "'.$start_date.'"
+			AND "'.$end_date.'")
+			OR (l.end_date BETWEEN "'.$start_date.'"
+			AND "'.$end_date.'"))
+            AND e.id_employee = "'.$id_employee.'"
             AND l.cancel_status = 0
         ';
         $query = $this->db->query($sql);
