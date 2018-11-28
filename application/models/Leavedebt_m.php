@@ -6,6 +6,10 @@ class Leavedebt_m extends CI_Model{
 		parent::__construct();
 	}
 
+	function insert_leave_debt($data){
+		$this->db->insert('leave_debt', $data);
+	}
+
 	function select_leave_debt_personal_year($id_employee, $year){
 		$sql = " SELECT * FROM leave_debt
               WHERE id_employee = ".$id_employee."

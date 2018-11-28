@@ -47,36 +47,18 @@ class Myschedule extends CI_Controller{
 
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
+
 		$year_select = date('Y');
         $leave_quota_employment = $this->get_employment_quota_leave($id_current_user, $year_select);
         $jum_leave_personal = $this->get_leave_with_dispensation($id_current_user, $data['current_user'][0]['id_city'], $year_select);
         $jum_quota_adjustment = $this->get_adjustment_quota($id_current_user, $year_select);
+        $minus_quota_last_year = $this->get_minus_quota_leave_last_year($id_current_user, $year_select, $data['current_user'][0]['id_city']);
 		echo $leave_quota_employment. " leave quota employment <br />";
 		echo $jum_leave_personal. " jum leave personal <br />";
 		echo $jum_quota_adjustment. " jum quota adjustment <br />";
-
-		$first_employment = $this->employment_m->select_first_row_employment($id_current_user);
-		$minus_quota_last_year = 0;
-		if (!empty($first_employment)) {
-			$first_employment = json_decode(json_encode($first_employment), true); //konversi stdclass to array
-			$tgl_pertama = $first_employment['tgl_mulai'];
-			$get_year_date = date('Y', strtotime($tgl_pertama));
-			if ($get_year_date < $year_select){
-				$list_leave_debt = $this->leavedebt_m->select_leave_debt_personal_year($id_current_user, $get_year_date);
-				if(!empty($list_leave_debt)){
-					foreach($list_leave_debt as $debt){
-						$minus_quota_last_year = $debt['quota_debt'];
-					}
-				}
-				else if(empty($list_leave_debt)){
-					//melakukan perhitungan tahun kemarin
-					//employment - leave request approved + adjustment
-				}
-			}
+		echo $minus_quota_last_year. " minus quota last year <br />";
 
 
-			echo $get_year_date;
-		}
 
 
 
@@ -438,6 +420,7 @@ class Myschedule extends CI_Controller{
 				}
 				$j++;
 			}
+			var_dump($list_personal_leave);
 			$final_jum_personal_leave = array_sum($list_jum_personal_leave);
 			$final_jum_personal_dispensation = array_sum($list_jum_personal_dispensation);
 
@@ -478,6 +461,48 @@ class Myschedule extends CI_Controller{
 		else $result = 0;
 
 		return $result;
+	}
+
+	private function final_quota_minus_personal($id_current_user, $year_select, $user_city){
+		$leave_quota_employment = $this->get_employment_quota_leave($id_current_user, $year_select);
+		$jum_leave_personal = $this->get_leave_with_dispensation($id_current_user, $user_city, $year_select);
+		$jum_quota_adjustment = $this->get_adjustment_quota($id_current_user, $year_select);
+
+		$minus_quota = ($leave_quota_employment + $jum_quota_adjustment) - $jum_leave_personal;
+		return $minus_quota;
+	}
+
+	private function get_minus_quota_leave_last_year($id_current_user, $year_select, $user_city){
+		$first_employment = $this->employment_m->select_first_row_employment($id_current_user);
+		$debt_quota_last_year = 0;
+		if (!empty($first_employment)) {
+			$first_employment = json_decode(json_encode($first_employment), true); //konversi stdclass to array
+			$tgl_pertama = $first_employment['tgl_mulai'];
+			$get_year_date = date('Y', strtotime($tgl_pertama));
+			if ($get_year_date < $year_select){
+				$list_leave_debt = $this->leavedebt_m->select_leave_debt_personal_year($id_current_user, $get_year_date);
+				if(!empty($list_leave_debt)){
+					foreach($list_leave_debt as $debt){
+						$debt_quota_last_year = $debt['quota_debt'];
+					}
+				}
+				else if(empty($list_leave_debt)){
+					//melakukan perhitungan tahun kemarin
+					//(employment+ adjustment) - leave request approved
+					$year_now = date('Y');
+					$year_select = $year_now - 1;
+					$minus_quota_last_year = $this->final_quota_minus_personal($id_current_user, $year_select, $user_city);
+					if($minus_quota_last_year >= 3) $debt_quota_last_year = 3;
+					else $debt_quota_last_year = $minus_quota_last_year;
+
+					$data_formdbt['id_employee'] = $id_current_user;
+					$data_formdbt['quota_debt'] = $minus_quota_last_year;
+					$data_formdbt['year'] =  $year_select;
+					$this->leavedebt_m->insert_leave_debt($data_formdbt);
+				}
+			}
+		}
+		return $debt_quota_last_year;
 	}
 
     private function joint_holiday() {
