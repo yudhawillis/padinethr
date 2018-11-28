@@ -16,7 +16,9 @@ class Myschedule extends CI_Controller{
 		$this->load->model('level_m', 'level_m');
         $this->load->model('holiday_m', 'holiday_m');
         $this->load->model('employment_m', 'employment_m');
+		$this->load->model('adjustment_m', 'adjustment_m');
         $this->load->model('approval_m', 'approval_m');
+		$this->load->model('leavedebt_m', 'leavedebt_m');
 //        $this->load->model('websetting_m', 'web_set');
 
         if($this->logged_in()){
@@ -45,22 +47,42 @@ class Myschedule extends CI_Controller{
 
         $id_current_user = $this->session->userdata('id_employee');
         $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
-        $leave_quota_employment = $this->get_employment_quota_leave($id_current_user);
-        $jum_leave_personal = $this->get_leave_with_dispensation($id_current_user, $data['current_user'][0]['id_city']);
-        $jum_quota_adjustment = $this->get_adjustment_quota($id_current_user);
+		$year_select = date('Y');
+        $leave_quota_employment = $this->get_employment_quota_leave($id_current_user, $year_select);
+        $jum_leave_personal = $this->get_leave_with_dispensation($id_current_user, $data['current_user'][0]['id_city'], $year_select);
+        $jum_quota_adjustment = $this->get_adjustment_quota($id_current_user, $year_select);
+		echo $leave_quota_employment. " leave quota employment <br />";
+		echo $jum_leave_personal. " jum leave personal <br />";
+		echo $jum_quota_adjustment. " jum quota adjustment <br />";
+
+		$first_employment = $this->employment_m->select_first_row_employment($id_current_user);
+		$minus_quota_last_year = 0;
+		if (!empty($first_employment)) {
+			$first_employment = json_decode(json_encode($first_employment), true); //konversi stdclass to array
+			$tgl_pertama = $first_employment['tgl_mulai'];
+			$get_year_date = date('Y', strtotime($tgl_pertama));
+			if ($get_year_date < $year_select){
+				$list_leave_debt = $this->leavedebt_m->select_leave_debt_personal_year($id_current_user, $get_year_date);
+				if(!empty($list_leave_debt)){
+					foreach($list_leave_debt as $debt){
+						$minus_quota_last_year = $debt['quota_debt'];
+					}
+				}
+				else if(empty($list_leave_debt)){
+					//melakukan perhitungan tahun kemarin
+					//employment - leave request approved + adjustment
+				}
+			}
+
+
+			echo $get_year_date;
+		}
 
 
 
 
 
 /////////-----------------garapan on demand - END ---------------------------------------------------
-
-
-
-
-
-
-
 
 
         $data['current_quota'] = $this->cek_jum_quota();
@@ -284,7 +306,7 @@ class Myschedule extends CI_Controller{
         return $days;
     }
 
-    private function get_employment_quota_leave($id_current_user){
+    private function get_employment_quota_leave($id_current_user, $year_select){
 		$first_employment = $this->employment_m->select_first_row_employment($id_current_user);
 		if (!empty($first_employment)){
 			$first_employment = json_decode(json_encode($first_employment),true); //konversi stdclass to array
@@ -299,11 +321,11 @@ class Myschedule extends CI_Controller{
 
 				//cek tahun -> if tahun selisih dua tahun maka januari prorate
 				//jika kurang dari satu tahun maka prorate current month
-				$year_current = date('y');
-				$get_year_date_one_year = date('y', strtotime($date_one_year));
-
+				$year_current = $year_select;
 				$start_date_select_current_year = $year_current."-01-01";
 				$end_date_select_current_year = $year_current."-12-31";
+
+				$get_year_date_one_year = date('Y', strtotime($date_one_year));
 
 				$personal_employment_year = $this->employment_m->employment_staff_year($id_current_user, $start_date_select_current_year, $end_date_select_current_year);
 				$list_emp_level = array();
@@ -380,11 +402,11 @@ class Myschedule extends CI_Controller{
 		return round($total_jum_leave);
 	}
 
-	private function get_leave_with_dispensation($id_current_user, $data_city_user){
+	private function get_leave_with_dispensation($id_current_user, $data_city_user, $year_select){
 		if ($data_city_user == 1 || $data_city_user == 2) $weekendtype = "satsun";
 		else $weekendtype = "sun";
 
-		$year_current = date('y');
+		$year_current = $year_select;
 		$start_date_select_current_year = $year_current."-01-01";
 		$end_date_select_current_year = $year_current."-12-31";
 
@@ -428,8 +450,8 @@ class Myschedule extends CI_Controller{
 
 	}
 
-	private function get_adjustment_quota($id_current_user){
-		$year_current = date('y');
+	private function get_adjustment_quota($id_current_user, $year_select){
+		$year_current = $year_select;
 		$start_date_select_current_year = $year_current."-01-01";
 		$end_date_select_current_year = $year_current."-12-31";
 
@@ -440,19 +462,18 @@ class Myschedule extends CI_Controller{
 
 			$i=0;
 			foreach ($list_adjusment_personal as $adj){
-				if($list_adjusment_personal[$i]['Adjustment']){
-					$list_adjustment_quota = $list_adjusment_personal[$i]['quota'];
+				if($list_adjusment_personal[$i]['adjustment_type'] == 'Adjustment'){
+					$list_adjustment_quota[] = $list_adjusment_personal[$i]['quota'];
 				}
-				else if ($list_adjusment_personal[$i]['Deduction']){
-					$list_deduction_quota = $list_adjusment_personal[$i]['quota'];
+				else if ($list_adjusment_personal[$i]['adjustment_type'] == 'Deduction'){
+					$list_deduction_quota[] = $list_adjusment_personal[$i]['quota'];
 				}
 				$i++;
 			}
-
-			$jum_adjustment_personal = array_sum($list_adjustment_quota);
+			$jum_adjustment_quota = array_sum($list_adjustment_quota);
 			$jum_deduction_quota = array_sum($list_deduction_quota);
 
-			$result =  $jum_adjustment_personal - $jum_deduction_quota;
+			$result =  $jum_adjustment_quota - $jum_deduction_quota;
 		}
 		else $result = 0;
 
