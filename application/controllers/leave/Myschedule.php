@@ -54,10 +54,30 @@ class Myschedule extends CI_Controller{
         $jum_quota_adjustment = $this->get_adjustment_quota($id_current_user, $year_select);
         $minus_quota_last_year = $this->get_minus_quota_leave_last_year($id_current_user, $year_select, $data['current_user'][0]['id_city']);
 		echo $leave_quota_employment. " leave quota employment <br />";
-		echo $jum_leave_personal. " jum leave personal <br />";
+		echo $jum_leave_personal. " jum leave personal --mungkin tidak jadi dipakai<br />";
 		echo $jum_quota_adjustment. " jum quota adjustment <br />";
 		echo $minus_quota_last_year. " minus quota last year <br />";
 
+
+		//start algoritma check tahunan
+		$data_joint_holiday = $this->joint_holiday();
+
+		$all_leave_date_personal = $this->get_list_date_leave_personal($id_current_user);
+		$jum_dispensation = $this->get_jum_dispensation_personal($id_current_user);
+
+		$jum_day_all_leave = count($all_leave_date_personal);
+		foreach ($all_leave_date_personal as $date_leave){
+			$get_year = date('Y', strtotime($date_leave));
+			if ($get_year != $year_select){
+				$jum_day_all_leave--;
+			}
+
+		}
+		echo $jum_day_all_leave;
+
+
+
+		//end algoritma check tahunan
 
 
 
@@ -503,6 +523,45 @@ class Myschedule extends CI_Controller{
 			}
 		}
 		return $debt_quota_last_year;
+	}
+
+	private function get_range_date($start_date, $end_date){
+		$starting_date = date($start_date);
+		$ending_date = date($end_date);
+		$starting_date1 = date('Y-m-d', strtotime($starting_date.'-1 day'));
+		while (strtotime($starting_date1) < strtotime($ending_date))
+		{
+			$starting_date1 = date('Y-m-d',strtotime($starting_date1.'+1 day'));
+			$dates[] = $starting_date1;
+		}
+
+		return $dates;
+	}
+
+	private function get_list_date_leave_personal($id_employee){
+		$leave_personal = array();
+		$all_leave_date_personal = array();
+		$data_leave = $this->leave_m->select_personal_leave($id_employee);
+		if(!empty($data_leave)) {
+			foreach ($data_leave as $leave) {
+				$get_range_leave = $this->get_range_date($leave['start_date'], $leave['end_date']);
+				$all_leave_date_personal = array_merge($leave_personal, $get_range_leave);
+			}
+		}
+		return $all_leave_date_personal;
+	}
+
+	private function get_jum_dispensation_personal($id_employee){
+    	$jum_all_dispensation_quota = 0;
+		$data_leave = $this->leave_m->select_personal_leave($id_employee);
+		if(!empty($data_leave)){
+			foreach($data_leave as $leave){
+				$list_dispensation[] = $leave['dispensation_quota'];
+			}
+			$jum_all_dispensation_quota = array_sum($list_dispensation);
+		}
+
+		return $jum_all_dispensation_quota;
 	}
 
     private function joint_holiday() {
