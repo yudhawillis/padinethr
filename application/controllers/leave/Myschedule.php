@@ -50,30 +50,42 @@ class Myschedule extends CI_Controller{
 
 		$year_select = date('Y');
         $leave_quota_employment = $this->get_employment_quota_leave($id_current_user, $year_select);
-        $jum_leave_personal = $this->get_leave_with_dispensation($id_current_user, $data['current_user'][0]['id_city'], $year_select);
         $jum_quota_adjustment = $this->get_adjustment_quota($id_current_user, $year_select);
         $minus_quota_last_year = $this->get_minus_quota_leave_last_year($id_current_user, $year_select, $data['current_user'][0]['id_city']);
 		echo $leave_quota_employment. " leave quota employment <br />";
-		echo $jum_leave_personal. " jum leave personal --mungkin tidak jadi dipakai<br />";
 		echo $jum_quota_adjustment. " jum quota adjustment <br />";
 		echo $minus_quota_last_year. " minus quota last year <br />";
 
 
 		//start algoritma check tahunan
 		$data_joint_holiday = $this->joint_holiday();
-
-		$all_leave_date_personal = $this->get_list_date_leave_personal($id_current_user);
 		$jum_dispensation = $this->get_jum_dispensation_personal($id_current_user);
 
-		$jum_day_all_leave = count($all_leave_date_personal);
-		foreach ($all_leave_date_personal as $date_leave){
-			$get_year = date('Y', strtotime($date_leave));
-			if ($get_year != $year_select){
-				$jum_day_all_leave--;
-			}
+		$all_leave_date_personal = $this->get_list_date_leave_personal($id_current_user);
+		$get_date_leave_personal_current_year = $this->get_date_leave_personal_current_year($all_leave_date_personal, $year_select);
+		$get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday);
 
+		$quota_now = $leave_quota_employment - ($get_jum_leave_after_holiday + $jum_quota_adjustment + $jum_dispensation);
+
+		echo $quota_now;
+
+		if (($quota_now >= -3 && $quota_now < 0)){
+			$debt_quota = $quota_now;
+			$quota_origin = 0;
 		}
-		echo $jum_day_all_leave;
+		if($quota_now < -3) {
+			$debt_quota = 3;
+			$quota_origin = 0;
+		}
+		else if($quota_now > 0){
+			$debt_quota = 0;
+			$quota_origin = $quota_now;
+		}
+
+
+
+
+
 
 
 
@@ -404,54 +416,7 @@ class Myschedule extends CI_Controller{
 		return round($total_jum_leave);
 	}
 
-	private function get_leave_with_dispensation($id_current_user, $data_city_user, $year_select){
-		if ($data_city_user == 1 || $data_city_user == 2) $weekendtype = "satsun";
-		else $weekendtype = "sun";
 
-		$year_current = $year_select;
-		$start_date_select_current_year = $year_current."-01-01";
-		$end_date_select_current_year = $year_current."-12-31";
-
-		$list_personal_leave = $this->leave_m->select_personal_leave_non_cancel_thisyear($id_current_user, $start_date_select_current_year, $end_date_select_current_year);
-		$list_jum_personal_leave = array();
-		$list_jum_personal_dispensation = array();
-		$jum_all_leave = 0;
-
-		if (!empty($list_personal_leave)){
-			$i=0;
-			foreach ($list_personal_leave as $leave){
-				$id_leave = $list_personal_leave[$i]['id_leave'];
-				$jum_approval = $this->approval_m->jum_approval_personal_leave($id_leave);
-				if ($jum_approval == 2){
-					$list_personal_leave[$i]['status_approve'] = TRUE;
-				} else {
-					$list_personal_leave[$i]['status_approve'] = FALSE;
-				}
-				$list_personal_leave[$i]['day'] = $this->count_days($list_personal_leave[$i]['start_date'], $list_personal_leave[$i]['end_date'], $weekendtype);
-
-				$i++;
-			}
-
-			$j=0;
-			foreach ($list_personal_leave as $leave){
-				if($list_personal_leave[$j]['status_approve'] == TRUE){
-					$list_jum_personal_leave[] = $this->count_days($list_personal_leave[$j]['start_date'], $list_personal_leave[$j]['end_date'], $weekendtype);
-					$list_jum_personal_dispensation[] = $list_personal_leave[$j]['dispensation_quota'];
-				}
-				$j++;
-			}
-			var_dump($list_personal_leave);
-			$final_jum_personal_leave = array_sum($list_jum_personal_leave);
-			$final_jum_personal_dispensation = array_sum($list_jum_personal_dispensation);
-
-			$jum_all_leave = $final_jum_personal_leave - $final_jum_personal_dispensation;
-		}
-
-		$result = $jum_all_leave;
-
-		return $result;
-
-	}
 
 	private function get_adjustment_quota($id_current_user, $year_select){
 		$year_current = $year_select;
@@ -564,6 +529,30 @@ class Myschedule extends CI_Controller{
 		return $jum_all_dispensation_quota;
 	}
 
+	private function get_date_leave_personal_current_year($all_leave_date_personal, $year_select){
+		$list_leave_current_year = array();
+		foreach ($all_leave_date_personal as $date_leave){
+			$get_year = date('Y', strtotime($date_leave));
+			if ($get_year == $year_select){
+				$list_leave_current_year[] = $date_leave;
+			}
+
+		}
+
+		return $list_leave_current_year;
+	}
+
+	private function get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday){
+		$jum_day_all_leave_filter = count($get_date_leave_personal_current_year);
+		foreach ($data_joint_holiday as $holiday){
+			if (in_array($holiday, $get_date_leave_personal_current_year)){
+				$jum_day_all_leave_filter--;
+			}
+
+		}
+		echo $jum_day_all_leave_filter;
+	}
+
     private function joint_holiday() {
         $list_holiday = $this->holiday_m->select_all();
         $all_holiday = array();
@@ -595,4 +584,88 @@ class Myschedule extends CI_Controller{
 //            }
 //        }
     }
+
+
+//	private function get_leave_with_dispensation($id_current_user, $data_city_user, $year_select){
+//		if ($data_city_user == 1 || $data_city_user == 2) $weekendtype = "satsun";
+//		else $weekendtype = "sun";
+//
+//		$year_current = $year_select;
+//		$start_date_select_current_year = $year_current."-01-01";
+//		$end_date_select_current_year = $year_current."-12-31";
+//
+//		$list_personal_leave = $this->leave_m->select_personal_leave_non_cancel_thisyear($id_current_user, $start_date_select_current_year, $end_date_select_current_year);
+//		$list_jum_personal_leave = array();
+//		$list_jum_personal_dispensation = array();
+//		$jum_all_leave = 0;
+//
+//		if (!empty($list_personal_leave)){
+//			$i=0;
+//			foreach ($list_personal_leave as $leave){
+//				$id_leave = $list_personal_leave[$i]['id_leave'];
+//				$jum_approval = $this->approval_m->jum_approval_personal_leave($id_leave);
+//				if ($jum_approval == 2){
+//					$list_personal_leave[$i]['status_approve'] = TRUE;
+//				} else {
+//					$list_personal_leave[$i]['status_approve'] = FALSE;
+//				}
+//				$list_personal_leave[$i]['day'] = $this->count_days($list_personal_leave[$i]['start_date'], $list_personal_leave[$i]['end_date'], $weekendtype);
+//
+//				$i++;
+//			}
+//
+//			$j=0;
+//			foreach ($list_personal_leave as $leave){
+//				if($list_personal_leave[$j]['status_approve'] == TRUE){
+//					$list_jum_personal_leave[] = $this->count_days($list_personal_leave[$j]['start_date'], $list_personal_leave[$j]['end_date'], $weekendtype);
+//					$list_jum_personal_dispensation[] = $list_personal_leave[$j]['dispensation_quota'];
+//				}
+//				$j++;
+//			}
+//			var_dump($list_personal_leave);
+//			$final_jum_personal_leave = array_sum($list_jum_personal_leave);
+//			$final_jum_personal_dispensation = array_sum($list_jum_personal_dispensation);
+//
+//			$jum_all_leave = $final_jum_personal_leave - $final_jum_personal_dispensation;
+//		}
+//
+//		$result = $jum_all_leave;
+//
+//		return $result;
+//
+//	}
+
+
+//	private function get_minus_quota_leave_last_year($id_current_user, $year_select, $user_city){
+//		$first_employment = $this->employment_m->select_first_row_employment($id_current_user);
+//		$debt_quota_last_year = 0;
+//		if (!empty($first_employment)) {
+//			$first_employment = json_decode(json_encode($first_employment), true); //konversi stdclass to array
+//			$tgl_pertama = $first_employment['tgl_mulai'];
+//			$get_year_date = date('Y', strtotime($tgl_pertama));
+//			if ($get_year_date < $year_select){
+//				$list_leave_debt = $this->leavedebt_m->select_leave_debt_personal_year($id_current_user, $get_year_date);
+//				if(!empty($list_leave_debt)){
+//					foreach($list_leave_debt as $debt){
+//						$debt_quota_last_year = $debt['quota_debt'];
+//					}
+//				}
+//				else if(empty($list_leave_debt)){
+//					//melakukan perhitungan tahun kemarin
+//					//(employment+ adjustment) - leave request approved
+//					$year_now = date('Y');
+//					$year_select = $year_now - 1;
+//					$minus_quota_last_year = $this->final_quota_minus_personal($id_current_user, $year_select, $user_city);
+//					if($minus_quota_last_year >= 3) $debt_quota_last_year = 3;
+//					else $debt_quota_last_year = $minus_quota_last_year;
+//
+//					$data_formdbt['id_employee'] = $id_current_user;
+//					$data_formdbt['quota_debt'] = $minus_quota_last_year;
+//					$data_formdbt['year'] =  $year_select;
+//					$this->leavedebt_m->insert_leave_debt($data_formdbt);
+//				}
+//			}
+//		}
+//		return $debt_quota_last_year;
+//	}
 }
