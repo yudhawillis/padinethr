@@ -424,7 +424,7 @@ class Employee extends CI_Controller{
                             $j++;
                         }
                     }
-                    $data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype);
+                    $data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota']);
                     $i++;
                 }
 
@@ -553,7 +553,7 @@ class Employee extends CI_Controller{
 					$j++;
 				}
 			}
-			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype);
+			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota']);
 			$i++;
 		}
         $this->load->view('em_personal_leave_v', $data);
@@ -783,6 +783,7 @@ class Employee extends CI_Controller{
         $data['halaman'] = $this->pagination->create_links();
         $data['startnum'] = $page + 1;
         $data['list_personal_employment'] = $this->employment_m->select_active_employment($id_employee);
+
         $this->load->view('em_personal_employment_v', $data);
     }
 
@@ -1063,7 +1064,7 @@ class Employee extends CI_Controller{
         }
     }
 
-    private function count_days($start_date, $end_date, $weekendtype) {
+    private function count_days($start_date, $end_date, $weekendtype, $dispensation_quota) {
         $start = new DateTime($start_date);
         $end = new DateTime($end_date);
         // otherwise the  end date is excluded (bug?)
@@ -1099,6 +1100,7 @@ class Employee extends CI_Controller{
                 }
             }
         }
+        $days = $days - $dispensation_quota;
         return $days;
     }
 

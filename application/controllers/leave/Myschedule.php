@@ -271,6 +271,10 @@ class Myschedule extends CI_Controller{
         return $days;
     }
 
+	//////////////////////////////////////
+	///  start new algoritma
+	//////////////////////////////////////
+
     private function get_employment_quota_leave($id_current_user, $year_select){
 		$first_employment = $this->employment_m->select_first_row_employment($id_current_user);
 		if (!empty($first_employment)){
@@ -367,7 +371,7 @@ class Myschedule extends CI_Controller{
 		return round($total_jum_leave);
 	}
 
-	/////start new algoritma
+
 
 	private function get_adjustment_quota($id_current_user, $year_select){
 		$year_current = $year_select;

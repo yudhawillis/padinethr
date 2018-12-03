@@ -44,7 +44,6 @@
                                             <thead>
                                             <tr>
                                                 <td>No</td>
-												<td></td>
                                                 <td>
                                                     <a href="<?php echo base_url(); ?>employment/employee/search/nik_employee/<?php echo $typeorder; ?>">
                                                         NIK
@@ -84,7 +83,6 @@
                                             <form method="post" action="<?php echo base_url(); ?>employment/employee/search/orby/ortype/" />
                                             <tr>
                                                 <td></td>
-												<td></td>
                                                 <td><input type="text" name="search_nik_employee" class="form-control" placeholder="..."<?php
                                                     if(isset($nik_employee)){
                                                         echo "value = '".$nik_employee."'";
@@ -144,14 +142,7 @@
                                             foreach($list_member as $row) { ?>
                                                 <tr>
                                                     <td><?php echo $startnum; ?></td>
-													<td><?php if ($row['button_reset']){
-															if ($this->session->userdata('id_role')==1 || $this->session->userdata('id_role')==2) {
-																?>
-																<input type="checkbox" name="chkbox_reset[]" value="<?php echo $row['id_employee'];  ?>"/>
-																<?php
-															}
-														}
-														?></td>
+
                                                     <td>
 
 														&nbsp;<a href="<?php echo base_url(); ?>employment/employee/detil_data/<?php echo $row['id_employee'];  ?>"><?php echo $row['nik_employee']; ?></a></td>
@@ -166,26 +157,17 @@
                                                     </td>
                                                     <td>
 
-                                                        <?php if ($row['button_reset']){
-                                                        	if ($this->session->userdata('id_role')==1 || $this->session->userdata('id_role')==2) {
-																?>
-																<a href="<?php echo base_url(); ?>employment/employee/reset_leave/<?php echo $row['id_employee']; ?>"><button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-retweet"></span> Reset Quota</button></a>
-
-																<?php
-															}
-														}
-                                                        ?>
 
                                                     </td>
                                                 </tr>
                                                 <?php
                                                 $startnum++;
                                             } ?>
-											<tr>
-												<td colspan="3">
-													<button type="submit" class="btn btn-primary btn-md"><span class="glyphicon glyphicon-retweet"></span> Reset From Checked List</button>
-												</td>
-											</tr>
+<!--											<tr>-->
+<!--												<td colspan="3">-->
+<!--													<button type="submit" class="btn btn-primary btn-md"><span class="glyphicon glyphicon-retweet"></span> Reset From Checked List</button>-->
+<!--												</td>-->
+<!--											</tr>-->
 
 											</form>
                                         </table>

@@ -78,7 +78,7 @@ class Myrequest extends CI_Controller{
                     $j++;
                 }
             }
-			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype);
+			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota']);
 
             $i++;
 
@@ -174,7 +174,7 @@ class Myrequest extends CI_Controller{
 						$j++;
 					}
 				}
-				$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype);
+				$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota']);
 				$i++;
 			}
         }
@@ -220,10 +220,9 @@ class Myrequest extends CI_Controller{
                     $j++;
                 }
             }
-			$data['list_personal_leave'][$i]['days'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype);
+			$data['list_personal_leave'][$i]['days'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota']);
             $i++;
         }
-
         $this->load->view('lv_myrequest_v', $data);
     }
 
@@ -294,7 +293,7 @@ class Myrequest extends CI_Controller{
         return $current_quota_ext;
     }
 
-    private function count_days($start_date, $end_date, $weekendtype) {
+    private function count_days($start_date, $end_date, $weekendtype, $dispensation_quota) {
         $start = new DateTime($start_date);
         $end = new DateTime($end_date);
         // otherwise the  end date is excluded (bug?)
@@ -330,6 +329,8 @@ class Myrequest extends CI_Controller{
                 }
             }
         }
+
+        $days = $days - $dispensation_quota;
         return $days;
     }
 

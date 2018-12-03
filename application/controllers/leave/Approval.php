@@ -348,7 +348,7 @@ class Approval extends CI_Controller{
 
 		$i = 0;
 		foreach ($data['detail_leave'] as $leave){
-			$data['detail_leave'][$i]['day'] = $this->count_days($data['detail_leave'][$i]['start_date'], $data['detail_leave'][$i]['end_date'], $weekendtype);
+			$data['detail_leave'][$i]['day'] = $this->count_days($data['detail_leave'][$i]['start_date'], $data['detail_leave'][$i]['end_date'], $weekendtype, $data['detail_leave'][$i]['dispensation_quota']);
 			$i++;
 		}
 
@@ -478,7 +478,7 @@ class Approval extends CI_Controller{
         $this->employment_m->update_employment($id_user, $data_formprof);
     }
 
-    private function count_days($start_date, $end_date, $weekendtype) {
+    private function count_days($start_date, $end_date, $weekendtype, $dispensation_quota) {
         $start = new DateTime($start_date);
         $end = new DateTime($end_date);
         // otherwise the  end date is excluded (bug?)
@@ -514,6 +514,7 @@ class Approval extends CI_Controller{
                 }
             }
         }
+        $days = $days - $dispensation_quota;
         return $days;
     }
 
