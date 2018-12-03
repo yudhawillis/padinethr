@@ -45,42 +45,34 @@ class Myschedule extends CI_Controller{
 
  /////////-----------------garapan on demand---------------------------------------------------
 
-        $id_current_user = $this->session->userdata('id_employee');
-        $data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
+		$id_current_user = $this->session->userdata('id_employee');
+		$data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
 
 		$year_select = date('Y');
-        $leave_quota_employment = $this->get_employment_quota_leave($id_current_user, $year_select);
-        $jum_quota_adjustment = $this->get_adjustment_quota($id_current_user, $year_select);
-        $minus_quota_last_year = $this->get_minus_quota_leave_last_year($id_current_user, $year_select, $data['current_user'][0]['id_city']);
-		echo $leave_quota_employment. " leave quota employment <br />";
-		echo $jum_quota_adjustment. " jum quota adjustment <br />";
-		echo $minus_quota_last_year. " minus quota last year <br />";
+		$leave_quota_employment = $this->get_employment_quota_leave($id_current_user, $year_select);
+		$jum_quota_adjustment = $this->get_adjustment_quota($id_current_user, $year_select);
+		$current_leave_quota = $this->get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment);
+//		var_dump($current_leave_quota);
+//		echo $leave_quota_employment. " leave quota employment <br />";
+//		echo $jum_quota_adjustment. " jum quota adjustment <br />";
 
+		$year_select_previous = $year_select - 1;
+		$leave_quota_employment_last_year = $this->get_employment_quota_leave($id_current_user, $year_select_previous);
+		$jum_quota_adjustment_last_year = $this->get_adjustment_quota($id_current_user, $year_select_previous);
+		$debt_quota_last_year = $this->get_final_leave_quota_last_year($id_current_user, $year_select_previous, $leave_quota_employment_last_year, $jum_quota_adjustment_last_year);
+		$minus_quota_prev_year = abs ($debt_quota_last_year - 3);
+//		echo $minus_quota_prev_year;
+
+		$leave_quota_remaining = $current_leave_quota['quota_origin'] - $minus_quota_prev_year;
+		$leave_quota_debt_remaining = $current_leave_quota['debt_quota'];
+
+		echo $leave_quota_remaining;
+		echo $leave_quota_debt_remaining;
 
 		//start algoritma check tahunan
-		$data_joint_holiday = $this->joint_holiday();
-		$jum_dispensation = $this->get_jum_dispensation_personal($id_current_user);
 
-		$all_leave_date_personal = $this->get_list_date_leave_personal($id_current_user);
-		$get_date_leave_personal_current_year = $this->get_date_leave_personal_current_year($all_leave_date_personal, $year_select);
-		$get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday);
 
-		$quota_now = $leave_quota_employment - ($get_jum_leave_after_holiday + $jum_quota_adjustment + $jum_dispensation);
 
-		echo $quota_now;
-
-		if (($quota_now >= -3 && $quota_now < 0)){
-			$debt_quota = $quota_now;
-			$quota_origin = 0;
-		}
-		if($quota_now < -3) {
-			$debt_quota = 3;
-			$quota_origin = 0;
-		}
-		else if($quota_now > 0){
-			$debt_quota = 0;
-			$quota_origin = $quota_now;
-		}
 
 
 
@@ -166,47 +158,6 @@ class Myschedule extends CI_Controller{
                 $this->session->set_flashdata('pesan', 'Anda telah berhasil melakukan input request cuti.');
                 redirect(base_url().'leave/myrequest');
             }
-//            if($final_req_quota >= -3 && $final_req_quota < 0){ //cuti di dalam minus
-//                $debt_leave_quota = $final_req_quota;
-//                $scheduler = array(
-//                    "start_date" => $this->input->post('start_date'),
-//                    "end_date" => $this->input->post('end_date'),
-//                    "description" => $this->input->post('description'),
-//                    "current_quota" => $current_quota,
-//                    "req_quota" => $req_quota,
-//                    "final_req_quota" => $final_req_quota,
-//                    "debt_leave_quota" => $debt_leave_quota,
-//                    "payroll_deduction" => 0
-//                );
-//                $this->session->set_userdata($scheduler);
-//                $this->session->set_flashdata('pesan', 'Kuota cuti berada pada limit.');
-//                redirect(base_url().'leave/myschedule/review');
-//
-//            }
-//            else if($current_quota != -3 && $final_req_quota < -3){ //cuti sampai potong gaji
-//                $debt_leave_quota = 3;
-//                $payroll_deduction = ($current_quota + $debt_leave_quota) - $final_req_quota;
-//
-//                $scheduler = array(
-//                    "start_date" => $this->input->post('start_date'),
-//                    "end_date" => $this->input->post('end_date'),
-//                    "description" => $this->input->post('description'),
-//                    "current_quota" => $current_quota,
-//                    "req_quota" => $req_quota,
-//                    "final_req_quota" => $final_req_quota,
-//                    "debt_leave_quota" => $debt_leave_quota,
-//                    "payroll_deduction" => $payroll_deduction
-//                );
-//                $this->session->set_userdata($scheduler);
-//                $this->session->set_flashdata('pesan', 'Kuota cuti berada pada limit.');
-//                redirect(base_url().'leave/myschedule/review');
-//
-//            } else if ($final_req_quota >= 0) { //cuti tidak sampai minus
-//                $this->leave_m->insert_leave($data_formlv);
-//                $this->session->set_flashdata('pesan', 'Anda telah berhasil melakukan input request cuti.');
-//                redirect(base_url().'leave/myrequest');
-//
-//            }
         }
     }
     public function blocked_request(){
@@ -416,7 +367,7 @@ class Myschedule extends CI_Controller{
 		return round($total_jum_leave);
 	}
 
-
+	/////start new algoritma
 
 	private function get_adjustment_quota($id_current_user, $year_select){
 		$year_current = $year_select;
@@ -529,7 +480,7 @@ class Myschedule extends CI_Controller{
 		return $jum_all_dispensation_quota;
 	}
 
-	private function get_date_leave_personal_current_year($all_leave_date_personal, $year_select){
+	private function get_date_leave_personal_select_year($all_leave_date_personal, $year_select){
 		$list_leave_current_year = array();
 		foreach ($all_leave_date_personal as $date_leave){
 			$get_year = date('Y', strtotime($date_leave));
@@ -542,15 +493,83 @@ class Myschedule extends CI_Controller{
 		return $list_leave_current_year;
 	}
 
-	private function get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday){
-		$jum_day_all_leave_filter = count($get_date_leave_personal_current_year);
+	private function get_jum_leave_after_holiday($get_date_leave_personal_select_year, $data_joint_holiday){
+		$jum_day_all_leave_filter = count($get_date_leave_personal_select_year);
 		foreach ($data_joint_holiday as $holiday){
-			if (in_array($holiday, $get_date_leave_personal_current_year)){
+			if (in_array($holiday, $get_date_leave_personal_select_year)){
 				$jum_day_all_leave_filter--;
 			}
 
 		}
-		echo $jum_day_all_leave_filter;
+		return $jum_day_all_leave_filter;
+	}
+
+	private function get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment){
+		$data_quota = array();
+		$data_joint_holiday = $this->joint_holiday();
+		$jum_dispensation = $this->get_jum_dispensation_personal($id_current_user);
+
+		$all_leave_date_personal = $this->get_list_date_leave_personal($id_current_user);
+		if(!empty($all_leave_date_personal)){
+			$get_date_leave_personal_current_year = $this->get_date_leave_personal_select_year($all_leave_date_personal, $year_select);
+			if(!empty($get_date_leave_personal_current_year)){
+				$get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday);
+
+				$quota_now = $leave_quota_employment - ($get_jum_leave_after_holiday + $jum_quota_adjustment + $jum_dispensation);
+
+				if (($quota_now >= -3 && $quota_now < 0)){
+					$debt_quota = abs($quota_now);
+					$quota_origin = 0;
+				}
+				if($quota_now < -3) {
+					$debt_quota = 0; //debt quota saat ini, sudah terpakai oleh jatah leave
+					$quota_origin = 0;
+				}
+				else if($quota_now > 0){
+					$debt_quota = 3; //debt quota saat ini, sudah terpakai oleh jatah leave
+					$quota_origin = $quota_now;
+				}
+			} else {
+				$debt_quota = 3;
+				$quota_origin = $leave_quota_employment;
+			}
+
+		} else {
+			$debt_quota = 3;
+			$quota_origin = $leave_quota_employment;
+		}
+
+		$data_quota['debt_quota'] = $debt_quota;
+		$data_quota['quota_origin'] = $quota_origin;
+
+		return $data_quota;
+	}
+
+	private function get_final_leave_quota_last_year($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment){
+		$debt_quota = 3;
+		$data_joint_holiday = $this->joint_holiday();
+		$jum_dispensation = $this->get_jum_dispensation_personal($id_current_user);
+
+		$all_leave_date_personal = $this->get_list_date_leave_personal($id_current_user);
+		if(!empty($all_leave_date_personal)){
+			$get_date_leave_personal_current_year = $this->get_date_leave_personal_select_year($all_leave_date_personal, $year_select);
+			if(!empty($get_date_leave_personal_current_year)){
+				$get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday);
+
+				$quota_now = $leave_quota_employment - ($get_jum_leave_after_holiday + $jum_quota_adjustment + $jum_dispensation);
+
+				if (($quota_now >= -3 && $quota_now < 0)){
+					$debt_quota = abs($quota_now);
+				}
+				if($quota_now < -3) {
+					$debt_quota = 0; //debt quota saat ini, sudah terpakai oleh jatah leave
+				}
+				else if($quota_now > 0){
+					$debt_quota = 3; //debt quota saat ini, sudah terpakai oleh jatah leave
+				}
+			}
+		}
+		return $debt_quota;
 	}
 
     private function joint_holiday() {
