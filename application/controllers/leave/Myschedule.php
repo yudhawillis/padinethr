@@ -471,7 +471,9 @@ class Myschedule extends CI_Controller{
 		return $all_leave_date_personal;
 	}
 
-	private function get_jum_dispensation_personal($id_employee){
+
+
+	private function get_jum_dispensation_personal($id_employee, $year_select){
     	$jum_all_dispensation_quota = 0;
 		$data_leave = $this->leave_m->select_personal_leave($id_employee);
 		if(!empty($data_leave)){
@@ -497,6 +499,20 @@ class Myschedule extends CI_Controller{
 		return $list_leave_current_year;
 	}
 
+	private function get_date_leave_personal_select_year_extend($all_leave_date_personal, $year_select){
+		$list_leave_current_year = array();
+		$id_employee = $all_leave_date_personal[0]['id_employee'];
+		foreach ($all_leave_date_personal as $date_leave){
+			$get_year = date('Y', strtotime($date_leave));
+			if ($get_year == $year_select){
+				$list_leave_current_year[] = $date_leave;
+			}
+
+		}
+
+		return $list_leave_current_year;
+	}
+
 	private function get_jum_leave_after_holiday($get_date_leave_personal_select_year, $data_joint_holiday){
 		$jum_day_all_leave_filter = count($get_date_leave_personal_select_year);
 		foreach ($data_joint_holiday as $holiday){
@@ -511,7 +527,7 @@ class Myschedule extends CI_Controller{
 	private function get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment){
 		$data_quota = array();
 		$data_joint_holiday = $this->joint_holiday();
-		$jum_dispensation = $this->get_jum_dispensation_personal($id_current_user);
+		$jum_dispensation = $this->get_jum_dispensation_personal($id_current_user, $year_select);
 
 		$all_leave_date_personal = $this->get_list_date_leave_personal($id_current_user);
 		if(!empty($all_leave_date_personal)){
@@ -574,6 +590,23 @@ class Myschedule extends CI_Controller{
 			}
 		}
 		return $debt_quota;
+	}
+
+	private function get_list_date_leave_personal_extend($id_employee, $year_select){
+		$year_next = $year_select + 1;
+		$date_start_next = $year_select."-12-31";
+		$date_end_next = $year_next."-01-16";
+
+		$leave_personal = array();
+		$all_leave_date_personal_extend = array();
+		$data_leave = $this->leave_m->select_personal_leave_extend($id_employee, $date_start_next, $date_end_next);
+		if(!empty($data_leave)) {
+			foreach ($data_leave as $leave) {
+				$get_range_leave = $this->get_range_date($leave['start_date'], $leave['end_date']);
+				$all_leave_date_personal_extend = array_merge($leave_personal, $get_range_leave);
+			}
+		}
+		return $all_leave_date_personal_extend;
 	}
 
     private function joint_holiday() {
