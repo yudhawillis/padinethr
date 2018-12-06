@@ -17,22 +17,40 @@ class Dispensation_m extends CI_Model{
 		return $result_array;
 	}
 
-	function select_dispensation_employee($id_employee){
-		$query = $this->db->get_where('dispensation', array('id_employee' => $id_employee));//namatabel
+	function select_dispensation_leave($id_leave){
+		$query = $this->db->get_where('dispensation', array('id_leave' => $id_leave));//namatabel
 		$result_array = $query->result_array();
 
 		return $result_array;
 	}
 
 	function select_dispensation_employee_year($id_employee, $year_select){
-		$query = $this->db->get_where('dispensation', array('id_employee' => $id_employee, 'year' => $year_select));//namatabel
+		$sql = "SELECT e.*, l.*, d.*
+                FROM employee e
+                LEFT JOIN leave_staff l
+                ON e.id_employee = l.id_employee
+                LEFT JOIN dispensation d
+                ON l.id_leave = d.id_leave
+                WHERE d.year = '".$year_select."'
+                AND e.id_employee = ".$id_employee."
+        ";
+        $query = $this->db->query($sql);
 		$result_array = $query->result_array();
 
 		return $result_array;
 	}
 
-	function jum_dispensation_personal($id_employee){
-		$query = $this->db->get_where('dispensation', array('id_employee' => $id_employee));//namatabel
+	function jum_dispensation_employee_year($id_employee, $year_select){
+        $sql = "SELECT e.*, l.*, d.*
+                FROM employee e
+                LEFT JOIN leave_staff l
+                ON e.id_employee = l.id_employee
+                LEFT JOIN dispensation d
+                ON l.id_leave = d.id_leave
+                WHERE d.year = '".$year_select."'
+                AND e.id_employee = ".$id_employee."
+        ";
+        $query = $this->db->query($sql);
 		$jum = $query->num_rows();
 		return $jum;
 	}

@@ -150,12 +150,20 @@
 																	<?php
 																	$i=1;
 																	foreach($list_year_leave as $year){
+																	    if(isset($list_year_leave[1])){
 																		?>
-																		<tr>
-																			<td> Tahun <?php echo $year; ?> </td>
-																			<td> <input type="number" name="<?php echo $year."_".$i; ?>" id="<?php echo $year."_".$i; ?>" class="form-control" value="0"></td>
-																		</tr>
-																	<?php
+                                                                            <tr>
+                                                                                <td> Disp. <?php echo $year; ?> </td>
+                                                                                <td> <input type="number" name="dispensation_quota_<?php echo $i; ?>" id="dispensation_quota_<?php echo $i; ?>" class="form-control" value="0"></td>
+                                                                            </tr>
+                                                                        <?php
+                                                                        } else {
+																	    ?>
+                                                                            <tr>
+                                                                                <td> <input type="number" name="dispensation_quota_<?php echo $i; ?>" id="dispensation_quota_<?php echo $i; ?>" class="form-control" value="0"></td>
+                                                                            </tr>
+                                                                        <?php
+                                                                        }
 																		$i++;
 																	}
 																	?>
@@ -291,10 +299,17 @@
             //var id = $(this).attr('name');
             //$("#proses_hapus").attr("href", "<?php //echo base_url(); ?>//admin/affiliate/hapus_data/"+id);
         });
-        $("#dispensation_quota").keyup(function(){
+        $("#dispensation_quota_1").keyup(function(){
             var id_leave = $("#id_leave").val();
-            var dispensation_quota = $("#dispensation_quota").val();
-            $("#link_approv").attr("href", "<?php echo base_url(); ?>leave/approval/approve_leave/"+id_leave+"/"+dispensation_quota+"");
+            var dispensation_quota_1 = $("#dispensation_quota_1").val();
+            $("#link_approv").attr("href", "<?php echo base_url(); ?>leave/approval/approve_leave/"+id_leave+"/"+dispensation_quota_1+"");
+        });
+
+        $("#dispensation_quota_2").keyup(function(){
+            var id_leave = $("#id_leave").val();
+            var dispensation_quota_1 = $("#dispensation_quota_1").val();
+            var dispensation_quota_2 = $("#dispensation_quota_2").val();
+            $("#link_approv").attr("href", "<?php echo base_url(); ?>leave/approval/approve_leave/"+id_leave+"/"+dispensation_quota_1+"/"+dispensation_quota_2+"");
         });
     });
 </script>

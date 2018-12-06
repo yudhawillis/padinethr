@@ -14,6 +14,7 @@ class Approval extends CI_Controller{
         $this->load->model('user_m', 'user_m');
         $this->load->model('leave_m', 'leave_m');
         $this->load->model('approval_m', 'approval_m');
+        $this->load->model('dispensation_m', 'dispensation_m');
         $this->load->model('employment_m', 'employment_m');
 		$this->load->model('holiday_m', 'holiday_m');
 //        $this->load->model('websetting_m', 'web_set');
@@ -367,7 +368,7 @@ class Approval extends CI_Controller{
         $this->load->view('lv_approval_detail_v', $data);
     }
 
-    public function approve_leave($id_leave, $dispensation_quota=0){
+    public function approve_leave($id_leave, $dispensation_quota_1=0, $dispensation_quota_2=0){
         if($this->log_super_hr()){
         }
         else redirect(base_url().'dashboard');
@@ -385,6 +386,17 @@ class Approval extends CI_Controller{
             redirect(base_url().'leave/approval');
         }
 
+        $data['detail_leave'] = $this->leave_m->select_detil_leave($id_leave);
+        $year_start = date('Y', strtotime($data['detail_leave'][0]['start_date']));
+        $year_end = date('Y', strtotime($data['detail_leave'][0]['end_date']));
+        $list_year_leave = array();
+        if ($year_start != $year_end){
+            $list_year_leave[] = $year_start;
+            $list_year_leave[] = $year_end;
+        } else if($year_start == $year_end){
+            $list_year_leave[] = $year_start;
+        }
+
         $current_leave = $this->leave_m->select_detil_leave($id_leave);
 
         $data_formap['id_leave'] = $id_leave;
@@ -395,13 +407,26 @@ class Approval extends CI_Controller{
         $data_formap['approval_time'] = $this->today_datetime();
         $this->approval_m->insert_approval($data_formap);
 
-        $data_formlv['dispensation_quota'] = $dispensation_quota;
-        $this->update_leave_dispensation($id_leave, $data_formlv);
+        $i=0;
+        foreach ($list_year_leave as $year){
+            $data_formlv['id_leave'] = $id_leave;
+            if($i==0){
+                $data_formlv['year'] = $list_year_leave[$i];
+                $data_formlv['dispensation_quota'] = $dispensation_quota_1;
+                $this->dispensation_m->insert_dispensation($data_formlv);
+            } else if ($i==1){
+                $data_formlv['year'] = $list_year_leave[$i];
+                $data_formlv['dispensation_quota'] = $dispensation_quota_2;
+                $this->dispensation_m->insert_dispensation($data_formlv);
+            }
+            $i++;
+        }
+
 
         $current_quota = $this->cek_jum_quota($data_formap['id_employee']);
         $current_quota_ext = $this->cek_jum_quota_ext($data_formap['id_employee']);
 
-        $this->count_request_leave($id_leave, $dispensation_quota, $current_quota, $current_quota_ext);
+        $this->count_request_leave($id_leave, $dispensation_quota_1, $current_quota, $current_quota_ext);
 
         $this->session->set_flashdata('pesan', 'Anda telah berhasil melakukan <i>approve leave</i>.');
         redirect(base_url().'leave/approval');
