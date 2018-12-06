@@ -62,7 +62,7 @@
                                                         <td>Address</td><td>:</td><td><?php echo $user['address']; ?></td>
                                                     </tr>
 													<tr>
-														<td>Address 2</td><td>:</td><td><?php echo $user['address_2']; ?></td>
+														<td>Address Domicile</td><td>:</td><td><?php echo $user['address_2']; ?></td>
 													</tr>
                                                     <tr>
                                                         <td>Birthdate</td><td>:</td><td><?php echo $user['birthdate']; ?></td>

@@ -251,7 +251,7 @@
                                                     ?>
                                                 >
                                                     <div class="col-md-3">
-                                                        <label for="address">Alamat </label>
+                                                        <label for="address">Address </label>
                                                     </div>
                                                     <div class="col-md-9">
                                                         <?php
@@ -272,7 +272,7 @@
 													?>
 												>
 													<div class="col-md-3">
-														<label for="address_2">Alamat 2</label>
+														<label for="address_2">Address Domicile</label>
 													</div>
 													<div class="col-md-9">
 														<?php
@@ -330,6 +330,33 @@
                                                         echo form_error('phone_number');?>
                                                     </div>
                                                 </div>
+												<div class="col-md-12"
+													<?php
+													if (form_error('employee_leave_type') != "") echo "class = 'alert alert-danger row'";
+													else echo "class = 'row'";
+													?>
+												>
+													<div class="col-md-3">
+														<label for="employee_leave_type">Employee Leave Type <span style="color:red">*</span></label>
+													</div>
+													<div class="col-md-9">
+														<?php
+														$select_leave = '';
+														$options = array(''  => '----------------- Select Leave -----------------',
+															'extend' => 'Extend',
+															'non_extend' => 'Non Extend');
+														$prop_leave = "id='employee_leave_type' class='form-control selectleave'"; //class dari bootstrap
+														if ($status_form == "add") {
+															echo form_dropdown('employee_leave_type', $options, set_value('employee_leave_type',$select_employee_leave_type), $prop_leave);
+														} else if ($status_form == "edit") {
+															echo form_dropdown('employee_leave_type', $options, set_value('employee_leave_type',$list_employee[0]['employee_leave_type']), $prop_leave);
+														}
+
+
+														?>
+														<?php echo form_error('id_role');?>
+													</div>
+												</div>
                                                 <div class="col-md-12"
                                                     <?php
                                                     if (form_error('status') != "") echo "class = 'alert alert-danger row'";

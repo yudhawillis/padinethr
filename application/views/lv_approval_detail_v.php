@@ -54,9 +54,9 @@
                                                     <tr>
                                                         <td>Name</td><td>:</td><td><?php echo $user['fullname']; ?></td>
                                                     </tr>
-                                                    <tr>
-                                                        <td>Role</td><td>:</td><td><?php echo $user['name_role']; ?></td>
-                                                    </tr>
+<!--                                                    <tr>-->
+<!--                                                        <td>Role</td><td>:</td><td>--><?php //echo $user['name_role']; ?><!--</td>-->
+<!--                                                    </tr>-->
                                                     <tr>
                                                         <td>Leave Quota</td><td>:</td><td><?php echo $detail_employment[0]['leave_quota']; ?></td>
                                                     </tr>
@@ -145,10 +145,26 @@
                                                         if($current_level_appr=="hr"){
                                                             if($cek_jum_approve==1 && $button_app!=0 ){
                                                                 ?>
-                                                                <td><input type="number" name="dispensation_quota" id="dispensation_quota" class="form-control" value="0"></td>
+                                                                <td>
+																<table class="table">
+																	<?php
+																	$i=1;
+																	foreach($list_year_leave as $year){
+																		?>
+																		<tr>
+																			<td> Tahun <?php echo $year; ?> </td>
+																			<td> <input type="number" name="<?php echo $year."_".$i; ?>" id="<?php echo $year."_".$i; ?>" class="form-control" value="0"></td>
+																		</tr>
+																	<?php
+																		$i++;
+																	}
+																	?>
+																</table>
+
+																</td>
                                                                 <?php
                                                             } else {
-                                                                echo "<td>".$row['dispensation_quota']."</td>";
+                                                                echo "<td>".$row[' ']."</td>";
                                                             }
                                                         }
                                                         ?>

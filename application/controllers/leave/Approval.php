@@ -258,6 +258,18 @@ class Approval extends CI_Controller{
         $data['detail_employee'] = $this->member_m->select_detil_employee($id_user_leave);
         $data['detail_employment'] = $this->employment_m->select_detil_employment_active($id_user_leave);
 
+
+
+		$year_start = date('Y', strtotime($data['detail_leave'][0]['start_date']));
+		$year_end = date('Y', strtotime($data['detail_leave'][0]['end_date']));
+		$data['list_year_leave'] = array();
+		if ($year_start != $year_end){
+			$data['list_year_leave'][] = $year_start;
+			$data['list_year_leave'][] = $year_end;
+		} else if($year_start == $year_end){
+			$data['list_year_leave'][] = $year_start;
+		}
+
 		if ($data['detail_employee'][0]['id_city'] == 1 || $data['detail_employee'][0]['id_city'] == 2) $weekendtype = "satsun";
 		else $weekendtype = "sun";
 
