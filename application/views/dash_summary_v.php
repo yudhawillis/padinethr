@@ -77,6 +77,18 @@
                                                         <td>Phone</td><td>:</td><td><?php echo $user['phone_number']; ?></td>
                                                     </tr>
                                                     <tr>
+                                                        <td>Employee Leave Type</td><td>:</td>
+                                                        <td>
+                                                            <?php
+                                                            if($user['employee_leave_type'] == 'non_extend'){
+                                                                echo "Non Extend Leave";
+                                                            } else if ($user['employee_leave_type'] == 'extend'){
+                                                                echo "Extend Leave";
+                                                            }
+                                                            ?>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
                                                         <td>User Role</td><td>:</td><td><?php echo $user['name_role']; ?></td>
                                                     </tr>
                                                     <tr>

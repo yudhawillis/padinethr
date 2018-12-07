@@ -57,12 +57,19 @@ class Myschedule extends CI_Controller{
 //		echo $leave_quota_employment. " leave quota employment <br />";
 //		echo $jum_quota_adjustment. " jum quota adjustment <br />";
 
+        //start perhitungan tahun lalu
 		$year_select_previous = $year_select - 1;
 		$leave_quota_employment_last_year = $this->get_employment_quota_leave($id_current_user, $year_select_previous);
 		$jum_quota_adjustment_last_year = $this->get_adjustment_quota($id_current_user, $year_select_previous);
 		$debt_quota_last_year = $this->get_final_leave_quota_last_year($id_current_user, $year_select_previous, $leave_quota_employment_last_year, $jum_quota_adjustment_last_year);
 		$minus_quota_prev_year = abs ($debt_quota_last_year - 3);
 //		echo $minus_quota_prev_year;
+        //end perhitungan tahun lalu
+
+        //start perhitungan extend 15 hari masa pengambilan cuti
+        $final_quota_leave_year_extend = $this->get_final_quota_leave_year_extend($id_current_user, $year_select);
+        echo $final_quota_leave_year_extend;
+        //end perhitungan extend 15 hari masa pengambilan cuti
 
 		$leave_quota_remaining = $current_leave_quota['quota_origin'] - $minus_quota_prev_year;
 		$leave_quota_debt_remaining = $current_leave_quota['debt_quota'];
@@ -72,8 +79,7 @@ class Myschedule extends CI_Controller{
 
 
 		//if check extend + 15 hari tahun depan
-        $final_quota_leave_year_extend = $this->get_final_quota_leave_year_extend($id_current_user, $year_select);
-        echo $final_quota_leave_year_extend;
+
         //nanti hasil diatas akan dihitiung quota remaining -- belum dibuat
 
 

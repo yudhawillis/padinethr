@@ -172,7 +172,7 @@
 																</td>
                                                                 <?php
                                                             } else {
-                                                                echo "<td>".$row[' ']."</td>";
+                                                                echo "<td>".$row['dispensation_quota_days']."</td>";
                                                             }
                                                         }
                                                         ?>

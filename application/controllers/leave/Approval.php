@@ -361,10 +361,10 @@ class Approval extends CI_Controller{
 
 		$i = 0;
 		foreach ($data['detail_leave'] as $leave){
-			$data['detail_leave'][$i]['day'] = $this->count_days($data['detail_leave'][$i]['start_date'], $data['detail_leave'][$i]['end_date'], $weekendtype, $data['detail_leave'][$i]['dispensation_quota']);
+			$data['detail_leave'][$i]['day'] = $this->count_days($data['detail_leave'][$i]['start_date'], $data['detail_leave'][$i]['end_date'], $weekendtype, $data['detail_leave'][$i]['dispensation_quota_days']);
+            $data['detail_leave'][$i]['dispensation_quota_days'] = $this->get_jum_dispensation_leave($leave['id_leave']);
 			$i++;
 		}
-
         $this->load->view('lv_approval_detail_v', $data);
     }
 
@@ -553,6 +553,19 @@ class Approval extends CI_Controller{
         }
         $days = $days - $dispensation_quota;
         return $days;
+    }
+
+    private function get_jum_dispensation_leave($id_leave){
+        $jum_all_dispensation_quota = 0;
+        $data_dispensation = $this->dispensation_m->select_dispensation_leave($id_leave);
+        if(!empty($data_dispensation)){
+            foreach($data_dispensation as $disp){
+                $list_dispensation[] = $disp['dispensation_quota'];
+            }
+            $jum_all_dispensation_quota = array_sum($list_dispensation);
+        }
+
+        return $jum_all_dispensation_quota;
     }
 
 	private function joint_holiday() {

@@ -48,9 +48,27 @@
                                             <div class="col-md-12">
                                                 <table class="table-profile">
                                                     <tr>
+                                                        <td>Name</td>
+                                                        <td> : </td>
+                                                        <td><?php echo $emp['fullname'] ?></td>
+                                                    </tr>
+                                                    <tr>
                                                         <td>Employment Level</td>
                                                         <td> : </td>
                                                         <td><?php echo $emp['level_name'] ?></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Employee Leave Type</td>
+                                                        <td> : </td>
+                                                        <td>
+                                                            <?php
+                                                            if($emp['employee_leave_type'] == 'non_extend'){
+                                                                echo "Non Extend Leave";
+                                                            } else if ($emp['employee_leave_type'] == 'extend'){
+                                                                echo "Extend Leave";
+                                                            }
+                                                            ?>
+                                                        </td>
                                                     </tr>
                                                     <tr>
                                                         <td>Leave Quota</td>

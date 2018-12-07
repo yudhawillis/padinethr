@@ -186,7 +186,7 @@
 															if (isset($row['app_status_2'])) {
 																if ($row['app_status_2'] == 1) {
 																	echo "<br />Approved by ".$row['app_name_2'];
-																	if($row['dispensation_quota'] > 0) echo "<br /><i style='font-size: 11px;'>Dispensation : ".$row['dispensation_quota']." day/s</i>";
+																	if($row['dispensation_quota_days'] > 0) echo "<br /><i style='font-size: 11px;'>Dispensation : ".$row['dispensation_quota_days']." day/s</i>";
 																}
 																if ($row['app_status_2'] == 0) {
 																	echo "<br />Rejected by ".$row['app_name_2'];

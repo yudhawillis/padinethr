@@ -14,6 +14,7 @@ class Myrequest extends CI_Controller{
         $this->load->model('user_m', 'user_m');
         $this->load->model('leave_m', 'leave_m');
         $this->load->model('approval_m', 'approval_m');
+        $this->load->model('dispensation_m', 'dispensation_m');
         $this->load->model('employment_m', 'employment_m');
 		$this->load->model('holiday_m', 'holiday_m');
 //        $this->load->model('websetting_m', 'web_set');
@@ -78,10 +79,10 @@ class Myrequest extends CI_Controller{
                     $j++;
                 }
             }
-			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota']);
+			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota_days']);
+            $data['list_personal_leave'][$i]['dispensation_quota_days'] = $this->get_jum_dispensation_leave($id_leave);
 
             $i++;
-
         }
         $this->load->view('lv_myrequest_v', $data);
 
@@ -175,6 +176,7 @@ class Myrequest extends CI_Controller{
 					}
 				}
 				$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota']);
+                $data['list_personal_leave'][$i]['dispensation_quota_days'] = $this->get_jum_dispensation_leave($id_leave);
 				$i++;
 			}
         }
@@ -221,6 +223,7 @@ class Myrequest extends CI_Controller{
                 }
             }
 			$data['list_personal_leave'][$i]['days'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota']);
+            $data['list_personal_leave'][$i]['dispensation_quota_days'] = $this->get_jum_dispensation_leave($id_leave);
             $i++;
         }
         $this->load->view('lv_myrequest_v', $data);
@@ -332,6 +335,19 @@ class Myrequest extends CI_Controller{
 
         $days = $days - $dispensation_quota;
         return $days;
+    }
+
+    private function get_jum_dispensation_leave($id_leave){
+        $jum_all_dispensation_quota = 0;
+        $data_dispensation = $this->dispensation_m->select_dispensation_leave($id_leave);
+        if(!empty($data_dispensation)){
+            foreach($data_dispensation as $disp){
+                $list_dispensation[] = $disp['dispensation_quota'];
+            }
+            $jum_all_dispensation_quota = array_sum($list_dispensation);
+        }
+
+        return $jum_all_dispensation_quota;
     }
 
 	private function joint_holiday() {
