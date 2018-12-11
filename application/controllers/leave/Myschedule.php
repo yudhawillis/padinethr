@@ -48,6 +48,9 @@ class Myschedule extends CI_Controller{
 
 		$id_current_user = $this->session->userdata('id_employee');
 		$data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
+		var_dump($data['current_user']);
+
+
 
 		$year_select = date('Y');
 		$leave_quota_employment = $this->get_employment_quota_leave($id_current_user, $year_select);
@@ -59,7 +62,6 @@ class Myschedule extends CI_Controller{
         else {
             $quota_origin = $current_leave_quota['quota_origin'];
         }
-
         $minus_quota_prev_year = $this->get_minus_quota_prev_year($id_current_user, $year_select);
 
 		$leave_quota_remaining = $quota_origin - $minus_quota_prev_year;
@@ -67,6 +69,10 @@ class Myschedule extends CI_Controller{
 
 		echo $leave_quota_remaining;
 		echo $leave_quota_debt_remaining;
+
+
+
+
 
 
         //posisi tahun sekarang misalkan 2019
@@ -100,6 +106,14 @@ class Myschedule extends CI_Controller{
         }
 
         //end menghitung sisa kuota tahun lalu tanpa utang cuti
+
+        //start perhitungan extend 15 hari masa pengambilan cuti
+//        $final_quota_leave_year_extend = $this->get_final_quota_leave_year_extend($id_current_user, $year_select);
+//        echo $final_quota_leave_year_extend;
+        //end perhitungan extend 15 hari masa pengambilan cuti
+
+
+
 
 
 /////////-----------------garapan on demand - END ---------------------------------------------------
@@ -483,6 +497,8 @@ class Myschedule extends CI_Controller{
 		return $all_leave_date_personal;
 	}
 
+
+
 	private function get_jum_dispensation_personal($id_employee, $year_select){
     	$jum_all_dispensation_quota = 0;
 		$data_dispensation = $this->dispensation_m->select_dispensation_employee_year($id_employee, $year_select);
@@ -508,6 +524,7 @@ class Myschedule extends CI_Controller{
 
 		return $list_leave_current_year;
 	}
+
 
 	private function get_jum_leave_after_holiday($get_date_leave_personal_select_year, $data_joint_holiday){
 		$jum_day_all_leave_filter = count($get_date_leave_personal_select_year);
@@ -604,6 +621,72 @@ class Myschedule extends CI_Controller{
         }
         return $quota_now;
     }
+
+    //start algoritma extend utk employee dgn masa cuti +15hari
+	private function get_list_date_leave_personal_extend($id_employee, $year_select){
+		$year_next = $year_select + 1;
+		$date_start_next = $year_select."-12-31";
+		$date_end_next = $year_next."-01-16";
+
+		$leave_personal = array();
+		$all_leave_date_personal_extend = array();
+		$data_leave = $this->leave_m->select_personal_leave_extend($id_employee, $date_start_next, $date_end_next);
+		if(!empty($data_leave)) {
+			foreach ($data_leave as $leave) {
+				$get_range_leave = $this->get_range_date($leave['start_date'], $leave['end_date']);
+				$all_leave_date_personal_extend = array_merge($leave_personal, $get_range_leave);
+			}
+		}
+		return $all_leave_date_personal_extend;
+	}
+
+    private function get_final_jum_leave_personal_extend($all_leave_date_personal_extend, $year_select, $id_employee){
+        $data_joint_holiday = $this->joint_holiday();
+        $jum_leave_extend_after_holiday = 0;
+        if(!empty($all_leave_date_personal_extend)){
+            $jum_leave_extend_after_holiday = $this->get_jum_leave_after_holiday($all_leave_date_personal_extend, $data_joint_holiday);
+        }
+        $jum_dispensation_personal_extend = $this->get_jum_dispensation_personal_extend($id_employee, $year_select);
+
+        $final_jum_leave_extend = $jum_leave_extend_after_holiday - $jum_dispensation_personal_extend;
+        return $final_jum_leave_extend;
+
+    }
+
+    private function get_jum_dispensation_personal_extend($id_employee, $year_select){
+        $year_next = $year_select + 1;
+        $date_start_next = $year_select."-12-31";
+        $date_end_next = $year_next."-01-16";
+
+        $jum_dispensation_quota = 0;
+        $list_id_leave = array();
+        $list_quota_dispensation = array();
+        $data_leave = $this->leave_m->select_personal_leave_extend($id_employee, $date_start_next, $date_end_next);
+        if(!empty($data_leave)) {
+            foreach ($data_leave as $leave) {
+                $list_id_leave[] = $leave['id_leave'];
+            }
+
+            foreach($list_id_leave as $id_leave){
+                $data_quota_dispensation = $this->dispensation_m->select_dispensation_leave($id_leave);
+                if(!empty($data_quota_dispensation)){
+                    foreach ($data_quota_dispensation as $disp){
+                        $list_quota_dispensation[] = $disp['dispensation_quota'];
+                    }
+                }
+            }
+        }
+        $jum_dispensation_quota = array_sum($list_quota_dispensation);
+        return $jum_dispensation_quota;
+    }
+
+    private function get_final_quota_leave_year_extend($id_employeer, $year_select){
+        $all_leave_date_personal_extend = $this->get_list_date_leave_personal_extend($id_employeer, $year_select);
+        $final_quota_leave_year_extend = $this->get_final_jum_leave_personal_extend($all_leave_date_personal_extend, $year_select,$id_employeer);
+
+        return $final_quota_leave_year_extend;
+    }
+    //end algoritma extend utk employee dgn masa cuti +15hari
 
     private function get_two_weeks_this_year($id_current_user, $quota_origin){
         //posisi tahun sekarang misalkan 2019
