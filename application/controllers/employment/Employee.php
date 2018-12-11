@@ -19,6 +19,7 @@ class Employee extends CI_Controller{
         $this->load->model('role_m', 'role_m');
         $this->load->model('approval_m', 'approval_m');
         $this->load->model('adjustment_m', 'adjustment_m');
+        $this->load->model('dispensation_m', 'dispensation_m');
 		$this->load->model('holiday_m', 'holiday_m');
 
         if($this->logged_in()){
@@ -560,8 +561,9 @@ class Employee extends CI_Controller{
 					$j++;
 				}
 			}
-			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota_days']);
             $data['list_personal_leave'][$i]['dispensation_quota_days'] = $this->get_jum_dispensation_leave($id_leave);
+			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota_days']);
+
 			$i++;
 		}
         $this->load->view('em_personal_leave_v', $data);

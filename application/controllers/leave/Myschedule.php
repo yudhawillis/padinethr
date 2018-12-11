@@ -78,9 +78,65 @@ class Myschedule extends CI_Controller{
 		echo $leave_quota_debt_remaining;
 
 
-		//if check extend + 15 hari tahun depan
+		//posisi tahun sekarang misalkan 2019
+		//start menghitung sisa kuota tahun lalu tanpa utang cuti
+        $year_select = date('Y');
+        $year_select_previous = $year_select - 1;
+        $leave_quota_employment_last_year = $this->get_employment_quota_leave($id_current_user, $year_select_previous);
+        $jum_quota_adjustment_last_year = $this->get_adjustment_quota($id_current_user, $year_select_previous);
+        $leave_quota_last_year = $this->get_quota_left($id_current_user, $year_select_previous, $leave_quota_employment_last_year, $jum_quota_adjustment_last_year);
+        $leave_quota_remaining = $leave_quota_last_year ;
+        if ($leave_quota_last_year > 0 ){
+            //perhitungan extend 15 hari masa pengambilan cuti - tahun ini mengambil kuota tahun lalu
+            $final_quota_leave_year_extend = $this->get_final_quota_leave_year_extend($id_current_user, $year_select);
+            if ($final_quota_leave_year_extend == $leave_quota_remaining){
+                $leave_quota_remaining = $leave_quota_remaining + $leave_quota_last_year;
+            }
+            else if ($final_quota_leave_year_extend < $leave_quota_last_year){
+                $sisa_pengurangan = $leave_quota_last_year - $final_quota_leave_year_extend;
+                $leave_quota_remaining =  $leave_quota_remaining + $sisa_pengurangan;
+            }
+            else if ($final_quota_leave_year_extend > $leave_quota_last_year){
+                $sisa_kelebihan = $final_quota_leave_year_extend - $leave_quota_last_year;
+                $leave_quota_remaining =  $leave_quota_remaining - $sisa_kelebihan;
+            }
+        }
+        //end menghitung sisa kuota tahun lalu tanpa utang cuti
 
-        //nanti hasil diatas akan dihitiung quota remaining -- belum dibuat
+
+
+        //posisi tahun sekarang misalkan 2019
+        // tetapi melihat tahun sebelumnya yaitu 2018
+        //start menghitung sisa kuota tahun 2019 tanpa utang cuti
+        $view_year_before = 2018;
+        $year_now = date('Y');
+        $year_select = $year_now - 1; //2018
+        if ($view_year_before == $year_select){
+            $leave_quota_employment_prev_year = $this->get_employment_quota_leave($id_current_user, $year_select);
+            $jum_quota_adjustment_prev_year = $this->get_adjustment_quota($id_current_user, $year_select);
+            $leave_quota_prev_year = $this->get_quota_left($id_current_user, $year_select, $leave_quota_employment_prev_year, $jum_quota_adjustment_prev_year);
+            $leave_quota_remaining = $leave_quota_prev_year;
+            echo $leave_quota_prev_year ;
+            if ($leave_quota_prev_year > 0 ){
+                //perhitungan extend 15 hari masa pengambilan cuti - tahun ini mengambil kuota tahun lalu
+                $year_select_next = $year_now;
+                $final_quota_leave_year_extend = $this->get_final_quota_leave_year_extend($id_current_user, $year_select_next);
+                if ($final_quota_leave_year_extend == $leave_quota_remaining){
+                    $leave_quota_remaining = $leave_quota_remaining + $leave_quota_last_year;
+                }
+                else if ($final_quota_leave_year_extend < $leave_quota_last_year){
+                    $sisa_pengurangan = $leave_quota_last_year - $final_quota_leave_year_extend;
+                    $leave_quota_remaining =  $leave_quota_remaining + $sisa_pengurangan;
+                }
+                else if ($final_quota_leave_year_extend > $leave_quota_last_year){
+                    $sisa_kelebihan = $final_quota_leave_year_extend - $leave_quota_last_year;
+                    $leave_quota_remaining =  $leave_quota_remaining - $sisa_kelebihan;
+                }
+            }
+        }
+
+        //end menghitung sisa kuota tahun lalu tanpa utang cuti
+
 
 
 
@@ -370,8 +426,6 @@ class Myschedule extends CI_Controller{
 		return round($total_jum_leave);
 	}
 
-
-
 	private function get_adjustment_quota($id_current_user, $year_select){
 		$year_current = $year_select;
 		$start_date_select_current_year = $year_current."-01-01";
@@ -577,6 +631,23 @@ class Myschedule extends CI_Controller{
 		}
 		return $debt_quota;
 	}
+
+    private function get_quota_left($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment){
+        $quota_now = $leave_quota_employment;
+        $data_joint_holiday = $this->joint_holiday();
+        $jum_dispensation = $this->get_jum_dispensation_personal($id_current_user, $year_select);
+
+        $all_leave_date_personal = $this->get_list_date_leave_personal($id_current_user);
+        if(!empty($all_leave_date_personal)){
+            $get_date_leave_personal_current_year = $this->get_date_leave_personal_select_year($all_leave_date_personal, $year_select);
+            if(!empty($get_date_leave_personal_current_year)){
+                $get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday);
+                $quota_now = $leave_quota_employment - ($get_jum_leave_after_holiday + $jum_quota_adjustment + $jum_dispensation);
+            }
+        }
+        return $quota_now;
+    }
+
     //start algoritma extend utk employee dgn masa cuti +15hari
 	private function get_list_date_leave_personal_extend($id_employee, $year_select){
 		$year_next = $year_select + 1;

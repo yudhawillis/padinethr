@@ -79,8 +79,9 @@ class Myrequest extends CI_Controller{
                     $j++;
                 }
             }
-			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota_days']);
             $data['list_personal_leave'][$i]['dispensation_quota_days'] = $this->get_jum_dispensation_leave($id_leave);
+			$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota_days']);
+
 
             $i++;
         }
@@ -175,8 +176,8 @@ class Myrequest extends CI_Controller{
 						$j++;
 					}
 				}
-				$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota']);
                 $data['list_personal_leave'][$i]['dispensation_quota_days'] = $this->get_jum_dispensation_leave($id_leave);
+				$data['list_personal_leave'][$i]['day'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota_days']);
 				$i++;
 			}
         }
@@ -222,8 +223,8 @@ class Myrequest extends CI_Controller{
                     $j++;
                 }
             }
-			$data['list_personal_leave'][$i]['days'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota']);
             $data['list_personal_leave'][$i]['dispensation_quota_days'] = $this->get_jum_dispensation_leave($id_leave);
+			$data['list_personal_leave'][$i]['days'] = $this->count_days($data['list_personal_leave'][$i]['start_date'], $data['list_personal_leave'][$i]['end_date'], $weekendtype, $data['list_personal_leave'][$i]['dispensation_quota']);
             $i++;
         }
         $this->load->view('lv_myrequest_v', $data);
