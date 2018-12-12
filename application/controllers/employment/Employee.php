@@ -216,7 +216,7 @@ class Employee extends CI_Controller{
         $this->form_validation->set_rules('nickname', 'nickname', 'required');
         $this->form_validation->set_rules('email', 'email', 'required');
         $this->form_validation->set_rules('nik_employee', 'nik_employee', 'required');
-		$this->form_validation->set_rules('employee_leave_type', 'employee_leave_type', 'required');
+//		$this->form_validation->set_rules('employee_leave_type', 'employee_leave_type', 'required');
         $this->form_validation->set_rules('id_role', 'role', 'required');
         if ($this->form_validation->run()==FALSE){
 //            var_dump($data);
@@ -224,7 +224,7 @@ class Employee extends CI_Controller{
             if ($get_status==1) $data['status'] = "checked";
 
             $data['select_id_role'] = $this->input->post('select_id_role');
-			$data['select_employee_leave_type'] = $this->input->post('select_employee_leave_type');
+//			$data['select_employee_leave_type'] = $this->input->post('select_employee_leave_type');
             $this->load->view('em_addemployee_v', $data);
         }
         else {
@@ -239,7 +239,7 @@ class Employee extends CI_Controller{
             $data_formprof['identity_number'] = $this->input->post('identity_number');
             $data_formprof['phone_number'] = $this->input->post('phone_number');
             $data_formprof['id_role'] = $this->input->post('id_role');
-			$data_formprof['employee_leave_type'] = $this->input->post('employee_leave_type');
+//			$data_formprof['employee_leave_type'] = $this->input->post('employee_leave_type');
 
             $get_status = $this->input->post('status');
             if ($get_status==1) $data_formprof['status'] = 1;
@@ -312,14 +312,14 @@ class Employee extends CI_Controller{
         $this->form_validation->set_rules('nickname', 'nickname', 'required');
         $this->form_validation->set_rules('email', 'email', 'required');
         $this->form_validation->set_rules('nik_employee', 'nik_employee', 'required');
-		$this->form_validation->set_rules('employee_leave_type', 'employee_leave_type', 'required');
+//		$this->form_validation->set_rules('employee_leave_type', 'employee_leave_type', 'required');
         $this->form_validation->set_rules('id_role', 'role', 'required');
         if ($this->form_validation->run()==FALSE){
             $get_status = $this->input->post('status');
             if ($get_status==1) $data['status'] = "checked";
             $data['select_id_role'] = $this->input->post('select_id_role');
             $data['select_adjustment_type'] = $this->input->post('select_adjustment_type');
-			$data['select_employee_leave_type'] = $this->input->post('select_employee_leave_type');
+//			$data['select_employee_leave_type'] = $this->input->post('select_employee_leave_type');
 
             $this->load->view('em_editemployee_v', $data);
         }
@@ -335,7 +335,7 @@ class Employee extends CI_Controller{
             $data_formprof['identity_number'] = $this->input->post('identity_number');
             $data_formprof['phone_number'] = $this->input->post('phone_number');
             $data_formprof['id_role'] = $this->input->post('id_role');
-			$data_formprof['employee_leave_type'] = $this->input->post('employee_leave_type');
+//			$data_formprof['employee_leave_type'] = $this->input->post('employee_leave_type');
 
             $get_status = $this->input->post('status');
             if ($get_status==1) $data_formprof['status'] = 1;
@@ -861,6 +861,7 @@ class Employee extends CI_Controller{
             $data_formprof['position'] = $this->input->post('position');
             $data_formprof['tgl_mulai'] = $this->input->post('tgl_mulai');
             $data_formprof['description'] = $this->input->post('description');
+			$data_formprof['employee_leave_type'] = $this->input->post('employee_leave_type');
             $data_formprof['status'] = 1;
 
 

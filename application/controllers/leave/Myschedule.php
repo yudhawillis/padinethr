@@ -48,17 +48,28 @@ class Myschedule extends CI_Controller{
 
 		$id_current_user = $this->session->userdata('id_employee');
 		$data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
-		var_dump($data['current_user']);
-
-
 
 		$year_select = date('Y');
 		$leave_quota_employment = $this->get_employment_quota_leave($id_current_user, $year_select);
 		$jum_quota_adjustment = $this->get_adjustment_quota($id_current_user, $year_select);
 		$current_leave_quota = $this->get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment);
-        if ($data['current_user'][0]['employee_leave_type'] == "extend"){
-            $quota_origin = $this->get_two_weeks_this_year($id_current_user, $current_leave_quota['quota_origin']);
-        }
+
+		$dates = array();
+		$list_employment_extend = $this->employment_m->employment_staff_extend($id_current_user);
+		foreach($list_employment_extend as $emp){
+			if($emp['tgl_berakhir'] == ""){
+				$emp['tgl_berakhir'] = $year_select."-12-31";
+			}
+			while (strtotime($emp['tgl_mulai']) < strtotime($emp['tgl_berakhir']))
+			{
+				$emp['tgl_mulai'] = date('Y-m-d',strtotime($emp['tgl_mulai'].'+1 day'));
+				$dates[] = date('Y',strtotime($emp['tgl_mulai']));
+			}
+		}
+		$year_prev = $year_select - 1;
+		if (in_array($year_prev, $dates)){
+			$quota_origin = $this->get_two_weeks_this_year($id_current_user, $current_leave_quota['quota_origin']);
+		}
         else {
             $quota_origin = $current_leave_quota['quota_origin'];
         }

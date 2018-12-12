@@ -312,6 +312,13 @@ class Employment_m extends CI_Model{
         return $jum;
     }
 
+	function employment_staff_extend($id_employee, $employee_leave_type="extend"){
+		$query = $this->db->get_where('employment', array('id_employee' => $id_employee, 'employee_leave_type' => $employee_leave_type));//namatabel
+		$result_array = $query->result_array();
+
+		return $result_array;
+	}
+
     function delete_employment($id) {
         $this->db->where('id_employment', $id);
         return $this->db->delete('employment');
