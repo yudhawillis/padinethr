@@ -216,7 +216,6 @@ class Employee extends CI_Controller{
         $this->form_validation->set_rules('nickname', 'nickname', 'required');
         $this->form_validation->set_rules('email', 'email', 'required');
         $this->form_validation->set_rules('nik_employee', 'nik_employee', 'required');
-//		$this->form_validation->set_rules('employee_leave_type', 'employee_leave_type', 'required');
         $this->form_validation->set_rules('id_role', 'role', 'required');
         if ($this->form_validation->run()==FALSE){
 //            var_dump($data);
@@ -248,18 +247,20 @@ class Employee extends CI_Controller{
             $this->up_imgprofile();
             $upload_data=$this->upload->data();
             $data_formprof['photo'] = $upload_data['file_name'];
+			echo $upload_data['file_name'];
+			echo "asu";
 
-            $get_password = $this->generateRandomString();
-            $data_formprof['password'] = $this->generatePassword($get_password);
-
-            $data_formprof['password_asli'] = $get_password;
-
-            $this->sendpassmail($data_formprof['email'], $data_formprof['nickname'], $data_formprof['password']);
-
-
-            $this->member_m->insert_employee($data_formprof);
-            $this->session->set_flashdata('pesan', 'Anda telah berhasil menambah data.');
-            redirect(base_url().'employment/employee');
+//            $get_password = $this->generateRandomString();
+//            $data_formprof['password'] = $this->generatePassword($get_password);
+//
+//            $data_formprof['password_asli'] = $get_password;
+//
+//            $this->sendpassmail($data_formprof['email'], $data_formprof['nickname'], $data_formprof['password']);
+//
+//
+//            $this->member_m->insert_employee($data_formprof);
+//            $this->session->set_flashdata('pesan', 'Anda telah berhasil menambah data.');
+//            redirect(base_url().'employment/employee');
         }
     }
 

@@ -90,7 +90,7 @@
                                                                 </div>
                                                                 <div class="col-md-9">
 
-                                                                    <input data-provide="datepicker" type="text" class="form-control" id="start_date" name="start_date" value="<?php echo set_value('start_date'); ?>">
+                                                                    <input data-provide="datepicker" type="text" class="form-control datepicker" id="start_date datepicker" name="start_date" value="<?php echo set_value('start_date'); ?>">
                                                                     <?php
                                                                     echo form_error('start_date');?>
                                                                 </div>
@@ -107,7 +107,7 @@
                                                                 </div>
                                                                 <div class="col-md-9">
 
-                                                                    <input data-provide="datepicker" type="text" class="form-control" id="end_date" name="end_date" value="<?php echo set_value('end_date'); ?>">
+                                                                    <input data-provide="datepicker" type="text" class="form-control datepicker" id="end_date" name="end_date" value="<?php echo set_value('end_date'); ?>">
                                                                     <?php
                                                                     echo form_error('end_date');?>
                                                                 </div>

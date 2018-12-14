@@ -6,10 +6,11 @@
 <meta name="author" content="">
 
 <?php
-echo link_tag('assets/templates/admin_temp/vendor/bootstrap/css/bootstrap.min.css');
+//echo link_tag('assets/templates/admin_temp/vendor/bootstrap/css/bootstrap.min.css');
 echo link_tag('assets/templates/admin_temp/vendor/metisMenu/metisMenu.min.css');
 echo link_tag('assets/templates/admin_temp/dist/css/sb-admin-2.css');
-echo link_tag('assets/css/styles.css');
+echo link_tag('assets/css/styles.css')
+
 //echo link_tag('assets/templates/admin_temp/vendor/font-awesome/css/font-awesome.min.css');
 
 //echo link_tag('assets/css/datepicker3.css');
@@ -61,10 +62,12 @@ echo link_tag('assets/css/styles.css');
     });
 
 </script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
 <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap-theme.min.css">-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
 <link rel="stylesheet" href="<?php echo assets_url(); ?>plugin/bootstrap-tagsinput/dist/bootstrap-tagsinput.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rainbow/1.2.0/themes/github.css">
+<link rel="stylesheet" href="<?php echo assets_url(); ?>plugin/datepicker/css/datepicker.css">
+<link rel="stylesheet" href="<?php echo assets_url(); ?>plugin/datepicker/less/datepicker.less">
 
 
 

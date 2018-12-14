@@ -54,25 +54,8 @@ class Myschedule extends CI_Controller{
 		$jum_quota_adjustment = $this->get_adjustment_quota($id_current_user, $year_select);
 		$current_leave_quota = $this->get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment);
 
-		$dates = array();
-		$list_employment_extend = $this->employment_m->employment_staff_extend($id_current_user);
-		foreach($list_employment_extend as $emp){
-			if($emp['tgl_berakhir'] == ""){
-				$emp['tgl_berakhir'] = $year_select."-12-31";
-			}
-			while (strtotime($emp['tgl_mulai']) < strtotime($emp['tgl_berakhir']))
-			{
-				$emp['tgl_mulai'] = date('Y-m-d',strtotime($emp['tgl_mulai'].'+1 day'));
-				$dates[] = date('Y',strtotime($emp['tgl_mulai']));
-			}
-		}
-		$year_prev = $year_select - 1;
-		if (in_array($year_prev, $dates)){
-			$quota_origin = $this->get_two_weeks_this_year($id_current_user, $current_leave_quota['quota_origin']);
-		}
-        else {
-            $quota_origin = $current_leave_quota['quota_origin'];
-        }
+		$quota_origin = $this->cek_employee_leave_extend($id_current_user, $year_select, $current_leave_quota['quota_origin']);
+
         $minus_quota_prev_year = $this->get_minus_quota_prev_year($id_current_user, $year_select);
 
 		$leave_quota_remaining = $quota_origin - $minus_quota_prev_year;
@@ -118,23 +101,21 @@ class Myschedule extends CI_Controller{
 
         //end menghitung sisa kuota tahun lalu tanpa utang cuti
 
-        //start perhitungan extend 15 hari masa pengambilan cuti
-//        $final_quota_leave_year_extend = $this->get_final_quota_leave_year_extend($id_current_user, $year_select);
-//        echo $final_quota_leave_year_extend;
-        //end perhitungan extend 15 hari masa pengambilan cuti
-
-
-
-
 
 /////////-----------------garapan on demand - END ---------------------------------------------------
 
 
-        $data['current_quota'] = $this->cek_jum_quota();
-        $data['current_quota_ext'] = $this->cek_jum_quota_ext();
-        if($data['current_quota_ext'] == 0){
-            $data['notif_current_quota'] = 0;
-        }
+		$data['current_quota'] = $leave_quota_remaining;
+		$data['current_quota_ext'] = $leave_quota_debt_remaining;
+		if($data['current_quota_ext'] == 0){
+			$data['notif_current_quota'] = 0;
+		}
+
+//        $data['current_quota'] = $this->cek_jum_quota();
+//        $data['current_quota_ext'] = $this->cek_jum_quota_ext();
+//        if($data['current_quota_ext'] == 0){
+//            $data['notif_current_quota'] = 0;
+//        }
 
         $this->load->library('form_validation');
         $this->form_validation->set_message('required', ' ');
@@ -738,6 +719,31 @@ class Myschedule extends CI_Controller{
         return $minus_quota_prev_year;
         //end perhitungan tahun lalu untuk pengecekan minus
     }
+
+    function cek_employee_leave_extend($id_current_user, $year_select, $current_leave_quota_origin){
+		$dates = array();
+		$list_employment_extend = $this->employment_m->employment_staff_extend($id_current_user);
+		foreach($list_employment_extend as $emp){
+			if($emp['tgl_berakhir'] == ""){
+				$emp['tgl_berakhir'] = $year_select."-12-31";
+			}
+			while (strtotime($emp['tgl_mulai']) < strtotime($emp['tgl_berakhir']))
+			{
+				$emp['tgl_mulai'] = date('Y-m-d',strtotime($emp['tgl_mulai'].'+1 day'));
+				$dates[] = date('Y',strtotime($emp['tgl_mulai']));
+			}
+		}
+		$year_prev = $year_select - 1;
+		if (in_array($year_prev, $dates)){
+			$quota_origin = $this->get_two_weeks_this_year($id_current_user, $current_leave_quota_origin);
+		}
+		else {
+			$quota_origin = $current_leave_quota_origin;
+		}
+
+		return $quota_origin;
+	}
+
 
     private function joint_holiday() {
         $list_holiday = $this->holiday_m->select_all();

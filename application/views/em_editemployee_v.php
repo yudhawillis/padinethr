@@ -68,7 +68,7 @@
                                         <div class="col-md-4">
                                             <div class="profile-photo">
                                                 <?php
-                                                if($current_user[0]['photo'] != "") {
+                                                if($list_employee[0]['photo'] != "") {
                                                     ?>
                                                     <img style="max-width: 200px;" src="<?php echo assets_url()."uploads/profile/".$list_employee[0]['photo']; ?>" alt="">
                                                     <?php
@@ -80,7 +80,7 @@
                                             </div>
                                             <div class="row">
                                                 <div class="col-lg-12">
-                                                    <input type="file" name="profilepic" id="profilepic" class="filestyle" data-buttonBefore="true" accept="image/x-png, image/gif, image/jpeg"/>
+                                                    <input type="file" name="profilepic" id="profilepic" class="filestyle" data-buttonBefore="true" accept="image/x-png, image/gif, image/jpg"/>
                                                 </div>
 
                                             </div>
