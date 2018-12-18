@@ -720,7 +720,7 @@ class Myschedule extends CI_Controller{
         //end perhitungan tahun lalu untuk pengecekan minus
     }
 
-    function cek_employee_leave_extend($id_current_user, $year_select, $current_leave_quota_origin){
+    private function cek_employee_leave_extend($id_current_user, $year_select, $current_leave_quota_origin){
 		$dates = array();
 		$list_employment_extend = $this->employment_m->employment_staff_extend($id_current_user);
 		foreach($list_employment_extend as $emp){

@@ -361,8 +361,9 @@ class Approval extends CI_Controller{
 
 		$i = 0;
 		foreach ($data['detail_leave'] as $leave){
-			$data['detail_leave'][$i]['day'] = $this->count_days($data['detail_leave'][$i]['start_date'], $data['detail_leave'][$i]['end_date'], $weekendtype, $data['detail_leave'][$i]['dispensation_quota_days']);
             $data['detail_leave'][$i]['dispensation_quota_days'] = $this->get_jum_dispensation_leave($leave['id_leave']);
+			$data['detail_leave'][$i]['day'] = $this->count_days($data['detail_leave'][$i]['start_date'], $data['detail_leave'][$i]['end_date'], $weekendtype, $data['detail_leave'][$i]['dispensation_quota_days']);
+
 			$i++;
 		}
         $this->load->view('lv_approval_detail_v', $data);

@@ -51,7 +51,7 @@
                                         <?php foreach ($current_user as $user) { ?>
                                         <div class="col-md-4">
                                             <div class="profile-photo">
-                                                <img style="max-width: 200px;" src="<?php echo assets_url()."uploads/profile/".$current_user[0]['photo']; ?>" alt="">
+                                                <img style="max-width: 200px;" src="<?php echo assets_url()?>images/no-image-available.png" alt="">
                                             </div>
                                             <div class="row">
                                                 <div class="col-lg-12">

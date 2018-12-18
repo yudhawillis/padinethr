@@ -855,7 +855,6 @@ class Employee extends CI_Controller{
         }
         else {
 
-
             $data_formprof['id_level'] = $this->input->post('id_level');
             $data_formprof['id_city'] = $this->input->post('id_city');
             $data_formprof['supervisor'] = $this->input->post('id_employee');

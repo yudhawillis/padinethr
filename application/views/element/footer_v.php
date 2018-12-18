@@ -30,6 +30,10 @@
 			startDate: '0d'
 		});
 
+        $('.datepicker-search').datepicker({
+            format: 'yyyy-mm-dd'
+        });
+
         $('[data-toggle="tooltip"]').tooltip();
     });
 </script>

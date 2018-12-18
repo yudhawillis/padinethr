@@ -97,14 +97,14 @@
                                                     ?>
                                                     >
                                                 </td>
-                                                <td><input type="text" name="search_start_date" class="form-control" placeholder="..."<?php
+                                                <td><input type="text" data-provide="datepicker" name="search_start_date" class="form-control datepicker-search" id="datepicker-search" placeholder="..."<?php
                                                     if(isset($start_date)){
                                                         echo "value = '".$start_date."'";
                                                     }
                                                     ?>
                                                     >
                                                 </td>
-                                                <td><input type="text" name="search_end_date" class="form-control" placeholder="..."<?php
+                                                <td><input type="text" data-provide="datepicker" name="search_end_date" class="form-control datepicker-search" id="datepicker-search" placeholder="..."<?php
                                                     if(isset($end_date)){
                                                         echo "value = '".$end_date."'";
                                                     }

@@ -1,5 +1,11 @@
-.datepicker th{
-	width: 50px !important;
+/*.datepicker th{*/
+	/*width: 50px !important;*/
+/*}*/
+/*.datepicker-search th{*/
+    /*width: 50px !important;*/
+/*}*/
+.datepicker-months, .datepicker-years{
+    min-width: 220px !important;
 }
 .table-profile {
     border-collapse: collapse;
