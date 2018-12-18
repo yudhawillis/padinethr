@@ -795,6 +795,22 @@ class Employee extends CI_Controller{
         $data['startnum'] = $page + 1;
         $data['list_personal_employment'] = $this->employment_m->select_active_employment($id_employee);
 
+
+        $year_select = date('Y');
+        $leave_quota_employment = $this->get_employment_quota_leave($id_employee, $year_select);
+        $jum_quota_adjustment = $this->get_adjustment_quota($id_employee, $year_select);
+        $current_leave_quota = $this->get_final_leave_quota($id_employee, $year_select, $leave_quota_employment, $jum_quota_adjustment);
+
+        $quota_origin = $this->cek_employee_leave_extend($id_employee, $year_select, $current_leave_quota['quota_origin']);
+
+        $minus_quota_prev_year = $this->get_minus_quota_prev_year($id_employee, $year_select);
+
+        $leave_quota_remaining = $quota_origin - $minus_quota_prev_year;
+        $leave_quota_debt_remaining = $current_leave_quota['debt_quota'];
+
+        $data['leave_quota_remaining'] = $leave_quota_remaining;
+        $data['leave_quota_debt_remaining'] = $leave_quota_debt_remaining;
+
         $this->load->view('em_personal_employment_v', $data);
     }
 
@@ -1183,6 +1199,459 @@ class Employee extends CI_Controller{
         $tanggal = mdate($datestring, $time);
 
         return $tanggal;
+    }
+
+    //////////////////////////////////////
+    ///  start new algoritma
+    //////////////////////////////////////
+
+    private function get_employment_quota_leave($id_current_user, $year_select){
+        $first_employment = $this->employment_m->select_first_row_employment($id_current_user);
+        if (!empty($first_employment)){
+            $first_employment = json_decode(json_encode($first_employment),true); //konversi stdclass to array
+
+            //$date_start_string = "2013-03-15";
+            $date_start_string = $first_employment['tgl_mulai'];
+            $date_start = date_create($date_start_string);
+            date_add($date_start,date_interval_create_from_date_string("1 year"));
+            $date_one_year = date_format($date_start,"Y-m-d");
+
+            if( strtotime('now') >= strtotime($date_one_year) ) {
+
+                //cek tahun -> if tahun selisih dua tahun maka januari prorate
+                //jika kurang dari satu tahun maka prorate current month
+                $year_current = $year_select;
+                $start_date_select_current_year = $year_current."-01-01";
+                $end_date_select_current_year = $year_current."-12-31";
+
+                $get_year_date_one_year = date('Y', strtotime($date_one_year));
+
+                $personal_employment_year = $this->employment_m->employment_staff_year($id_current_user, $start_date_select_current_year, $end_date_select_current_year);
+                $list_emp_level = array();
+                $list_jum_leave = array();
+                $bulan_akhir = 12;
+                $list_month_employment_full_quota[0] = "1"; //sebagai bulan januari untuk array full quota
+
+
+                foreach($personal_employment_year as $emp){
+                    $list_emp_level[] = $emp['id_level'];
+                    $data_level = $this->level_m->select_detil_level($emp['id_level']);
+                    $list_emp_quota[] = $data_level[0]['level_quota'];
+
+                    $number_month = date('n', strtotime($emp['tgl_mulai']));
+                    $number_date = date('i', strtotime($emp['tgl_mulai']));
+                    if ($number_date > 14) $month_number_new = $number_month + 1;
+                    else $month_number_new = $number_month;
+
+                    $list_month_employment_full_quota[] = $month_number_new;
+                    $list_month_employment_prorate[] =  $month_number_new;
+                }
+
+                if ($year_current - $get_year_date_one_year == 0) {
+                    // harus dibedakan antara employment tahun pertama
+                    // karena tahun pertama adalah dihitung tgl start kebawah dari employment pertama
+                    // sedangkan tahun kedua dihitung per januari, dan dihitung dari employmen kedua dst
+                    $i = 0;
+                    foreach ($list_month_employment_prorate as $month) {
+                        $j = $i + 1;
+
+                        if (isset($list_month_employment_prorate[$j])) {
+                            $jarak_bulan = $list_month_employment_prorate[$j] - $list_month_employment_prorate[$i];
+                            $list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
+                        } else {
+                            $jarak_bulan = $bulan_akhir - $list_month_employment_prorate[$i] + 1 ;
+                            $list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
+                        }
+                        $i++;
+                    }
+                    $total_jum_leave = array_sum($list_jum_leave);
+
+                } else if ($year_current - $get_year_date_one_year >= 1) {//jika tahun kedua
+                    // pengecekan next array untuk menghitung jarak antar bulan
+                    // berlaku jika ada 3 array / 3 bulan dalam satu tahun
+                    // array pertama pasti januari. array bulan kedua menghitung jumlah bulan sampai bulan array ke tiga
+
+                    $i = 0;
+                    foreach ($list_month_employment_full_quota as $month) {
+                        $j = $i + 1;
+                        if (isset($list_month_employment_full_quota[$j])) {
+                            $jarak_bulan = $list_month_employment_full_quota[$j] - $list_month_employment_full_quota[$i];
+                            $list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
+                        } else {
+                            $jarak_bulan = $bulan_akhir - $list_month_employment_full_quota[$i] + 1;
+                            $list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
+                        }
+                        $i++;
+                    }
+                    $total_jum_leave = array_sum($list_jum_leave);
+                } else {
+                    $total_jum_leave = 0;
+                    //tanpa cuti
+                }
+            } else {
+                $total_jum_leave = 0;
+                //tanpa cuti
+            }
+
+
+        } else {
+            $total_jum_leave = 0;
+        }
+
+        return round($total_jum_leave);
+    }
+
+    private function get_adjustment_quota($id_current_user, $year_select){
+        $year_current = $year_select;
+        $start_date_select_current_year = $year_current."-01-01";
+        $end_date_select_current_year = $year_current."-12-31";
+
+        $list_adjusment_personal = $this->adjustment_m->select_adjustment_employee_thisyear($id_current_user, $start_date_select_current_year, $end_date_select_current_year);
+        $list_adjustment_quota = array();
+        $list_deduction_quota = array();
+        if(!empty($list_adjusment_personal)){
+
+            $i=0;
+            foreach ($list_adjusment_personal as $adj){
+                if($list_adjusment_personal[$i]['adjustment_type'] == 'Adjustment'){
+                    $list_adjustment_quota[] = $list_adjusment_personal[$i]['quota'];
+                }
+                else if ($list_adjusment_personal[$i]['adjustment_type'] == 'Deduction'){
+                    $list_deduction_quota[] = $list_adjusment_personal[$i]['quota'];
+                }
+                $i++;
+            }
+            $jum_adjustment_quota = array_sum($list_adjustment_quota);
+            $jum_deduction_quota = array_sum($list_deduction_quota);
+
+            $result =  $jum_adjustment_quota - $jum_deduction_quota;
+        }
+        else $result = 0;
+
+        return $result;
+    }
+
+    private function final_quota_minus_personal($id_current_user, $year_select, $user_city){
+        $leave_quota_employment = $this->get_employment_quota_leave($id_current_user, $year_select);
+        $jum_leave_personal = $this->get_leave_with_dispensation($id_current_user, $user_city, $year_select);
+        $jum_quota_adjustment = $this->get_adjustment_quota($id_current_user, $year_select);
+
+        $minus_quota = ($leave_quota_employment + $jum_quota_adjustment) - $jum_leave_personal;
+        return $minus_quota;
+    }
+
+    private function get_minus_quota_leave_last_year($id_current_user, $year_select, $user_city){
+        $first_employment = $this->employment_m->select_first_row_employment($id_current_user);
+        $debt_quota_last_year = 0;
+        if (!empty($first_employment)) {
+            $first_employment = json_decode(json_encode($first_employment), true); //konversi stdclass to array
+            $tgl_pertama = $first_employment['tgl_mulai'];
+            $get_year_date = date('Y', strtotime($tgl_pertama));
+            if ($get_year_date < $year_select){
+                $list_leave_debt = $this->leavedebt_m->select_leave_debt_personal_year($id_current_user, $get_year_date);
+                if(!empty($list_leave_debt)){
+                    foreach($list_leave_debt as $debt){
+                        $debt_quota_last_year = $debt['quota_debt'];
+                    }
+                }
+                else if(empty($list_leave_debt)){
+                    //melakukan perhitungan tahun kemarin
+                    //(employment+ adjustment) - leave request approved
+                    $year_now = date('Y');
+                    $year_select = $year_now - 1;
+                    $minus_quota_last_year = $this->final_quota_minus_personal($id_current_user, $year_select, $user_city);
+                    if($minus_quota_last_year >= 3) $debt_quota_last_year = 3;
+                    else $debt_quota_last_year = $minus_quota_last_year;
+
+                    $data_formdbt['id_employee'] = $id_current_user;
+                    $data_formdbt['quota_debt'] = $minus_quota_last_year;
+                    $data_formdbt['year'] =  $year_select;
+                    $this->leavedebt_m->insert_leave_debt($data_formdbt);
+                }
+            }
+        }
+        return $debt_quota_last_year;
+    }
+
+    private function get_range_date($start_date, $end_date){
+        $starting_date = date($start_date);
+        $ending_date = date($end_date);
+        $starting_date1 = date('Y-m-d', strtotime($starting_date.'-1 day'));
+        while (strtotime($starting_date1) < strtotime($ending_date))
+        {
+            $starting_date1 = date('Y-m-d',strtotime($starting_date1.'+1 day'));
+            $dates[] = $starting_date1;
+        }
+
+        return $dates;
+    }
+
+    private function get_list_date_leave_personal($id_employee){
+        $leave_personal = array();
+        $all_leave_date_personal = array();
+        $data_leave = $this->leave_m->select_personal_leave($id_employee);
+        if(!empty($data_leave)) {
+            foreach ($data_leave as $leave) {
+                $get_range_leave = $this->get_range_date($leave['start_date'], $leave['end_date']);
+                $all_leave_date_personal = array_merge($leave_personal, $get_range_leave);
+            }
+        }
+        return $all_leave_date_personal;
+    }
+
+
+
+    private function get_jum_dispensation_personal($id_employee, $year_select){
+        $jum_all_dispensation_quota = 0;
+        $data_dispensation = $this->dispensation_m->select_dispensation_employee_year($id_employee, $year_select);
+        if(!empty($data_dispensation)){
+            foreach($data_dispensation as $disp){
+                $list_dispensation[] = $disp['dispensation_quota'];
+            }
+            $jum_all_dispensation_quota = array_sum($list_dispensation);
+        }
+
+        return $jum_all_dispensation_quota;
+    }
+
+    private function get_date_leave_personal_select_year($all_leave_date_personal, $year_select){
+        $list_leave_current_year = array();
+        foreach ($all_leave_date_personal as $date_leave){
+            $get_year = date('Y', strtotime($date_leave));
+            if ($get_year == $year_select){
+                $list_leave_current_year[] = $date_leave;
+            }
+
+        }
+
+        return $list_leave_current_year;
+    }
+
+
+    private function get_jum_leave_after_holiday($get_date_leave_personal_select_year, $data_joint_holiday){
+        $jum_day_all_leave_filter = count($get_date_leave_personal_select_year);
+        foreach ($data_joint_holiday as $holiday){
+            if (in_array($holiday, $get_date_leave_personal_select_year)){
+                $jum_day_all_leave_filter--;
+            }
+
+        }
+        return $jum_day_all_leave_filter;
+    }
+
+    private function get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment){
+        $data_quota = array();
+        $data_joint_holiday = $this->joint_holiday();
+        $jum_dispensation = $this->get_jum_dispensation_personal($id_current_user, $year_select);
+
+        $all_leave_date_personal = $this->get_list_date_leave_personal($id_current_user);
+        if(!empty($all_leave_date_personal)){
+            $get_date_leave_personal_current_year = $this->get_date_leave_personal_select_year($all_leave_date_personal, $year_select);
+            if(!empty($get_date_leave_personal_current_year)){
+                $get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday);
+
+                $quota_now = $leave_quota_employment - ($get_jum_leave_after_holiday + $jum_quota_adjustment + $jum_dispensation);
+
+                if (($quota_now >= -3 && $quota_now < 0)){
+                    $debt_quota = abs($quota_now);
+                    $quota_origin = 0;
+                }
+                if($quota_now < -3) {
+                    $debt_quota = 0; //debt quota saat ini, sudah terpakai oleh jatah leave
+                    $quota_origin = 0;
+                }
+                else if($quota_now > 0){
+                    $debt_quota = 3; //debt quota saat ini, sudah terpakai oleh jatah leave
+                    $quota_origin = $quota_now;
+                }
+            } else {
+                $debt_quota = 3;
+                $quota_origin = $leave_quota_employment;
+            }
+
+        } else {
+            $debt_quota = 3;
+            $quota_origin = $leave_quota_employment;
+        }
+
+        $data_quota['debt_quota'] = $debt_quota;
+        $data_quota['quota_origin'] = $quota_origin;
+
+        return $data_quota;
+    }
+
+
+    private function get_final_leave_quota_last_year($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment){
+        $debt_quota = 3;
+        $data_joint_holiday = $this->joint_holiday();
+        $jum_dispensation = $this->get_jum_dispensation_personal($id_current_user, $year_select);
+
+        $all_leave_date_personal = $this->get_list_date_leave_personal($id_current_user);
+        if(!empty($all_leave_date_personal)){
+            $get_date_leave_personal_current_year = $this->get_date_leave_personal_select_year($all_leave_date_personal, $year_select);
+            if(!empty($get_date_leave_personal_current_year)){
+                $get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday);
+
+                $quota_now = $leave_quota_employment - ($get_jum_leave_after_holiday + $jum_quota_adjustment + $jum_dispensation);
+
+                if (($quota_now >= -3 && $quota_now < 0)){
+                    $debt_quota = abs($quota_now);
+                }
+                if($quota_now < -3) {
+                    $debt_quota = 0; //debt quota saat ini, sudah terpakai oleh jatah leave
+                }
+                else if($quota_now > 0){
+                    $debt_quota = 3; //debt quota saat ini, sudah terpakai oleh jatah leave
+                }
+            }
+        }
+        return $debt_quota;
+    }
+
+    private function get_quota_left($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment){
+        $quota_now = $leave_quota_employment;
+        $data_joint_holiday = $this->joint_holiday();
+        $jum_dispensation = $this->get_jum_dispensation_personal($id_current_user, $year_select);
+
+        $all_leave_date_personal = $this->get_list_date_leave_personal($id_current_user);
+        if(!empty($all_leave_date_personal)){
+            $get_date_leave_personal_current_year = $this->get_date_leave_personal_select_year($all_leave_date_personal, $year_select);
+            if(!empty($get_date_leave_personal_current_year)){
+                $get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday);
+                $quota_now = $leave_quota_employment - ($get_jum_leave_after_holiday + $jum_quota_adjustment + $jum_dispensation);
+            }
+        }
+        return $quota_now;
+    }
+
+    //start algoritma extend utk employee dgn masa cuti +15hari
+    private function get_list_date_leave_personal_extend($id_employee, $year_select){
+        $year_next = $year_select + 1;
+        $date_start_next = $year_select."-12-31";
+        $date_end_next = $year_next."-01-16";
+
+        $leave_personal = array();
+        $all_leave_date_personal_extend = array();
+        $data_leave = $this->leave_m->select_personal_leave_extend($id_employee, $date_start_next, $date_end_next);
+        if(!empty($data_leave)) {
+            foreach ($data_leave as $leave) {
+                $get_range_leave = $this->get_range_date($leave['start_date'], $leave['end_date']);
+                $all_leave_date_personal_extend = array_merge($leave_personal, $get_range_leave);
+            }
+        }
+        return $all_leave_date_personal_extend;
+    }
+
+    private function get_final_jum_leave_personal_extend($all_leave_date_personal_extend, $year_select, $id_employee){
+        $data_joint_holiday = $this->joint_holiday();
+        $jum_leave_extend_after_holiday = 0;
+        if(!empty($all_leave_date_personal_extend)){
+            $jum_leave_extend_after_holiday = $this->get_jum_leave_after_holiday($all_leave_date_personal_extend, $data_joint_holiday);
+        }
+        $jum_dispensation_personal_extend = $this->get_jum_dispensation_personal_extend($id_employee, $year_select);
+
+        $final_jum_leave_extend = $jum_leave_extend_after_holiday - $jum_dispensation_personal_extend;
+        return $final_jum_leave_extend;
+
+    }
+
+    private function get_jum_dispensation_personal_extend($id_employee, $year_select){
+        $year_next = $year_select + 1;
+        $date_start_next = $year_select."-12-31";
+        $date_end_next = $year_next."-01-16";
+
+        $jum_dispensation_quota = 0;
+        $list_id_leave = array();
+        $list_quota_dispensation = array();
+        $data_leave = $this->leave_m->select_personal_leave_extend($id_employee, $date_start_next, $date_end_next);
+        if(!empty($data_leave)) {
+            foreach ($data_leave as $leave) {
+                $list_id_leave[] = $leave['id_leave'];
+            }
+
+            foreach($list_id_leave as $id_leave){
+                $data_quota_dispensation = $this->dispensation_m->select_dispensation_leave($id_leave);
+                if(!empty($data_quota_dispensation)){
+                    foreach ($data_quota_dispensation as $disp){
+                        $list_quota_dispensation[] = $disp['dispensation_quota'];
+                    }
+                }
+            }
+        }
+        $jum_dispensation_quota = array_sum($list_quota_dispensation);
+        return $jum_dispensation_quota;
+    }
+
+    private function get_final_quota_leave_year_extend($id_employeer, $year_select){
+        $all_leave_date_personal_extend = $this->get_list_date_leave_personal_extend($id_employeer, $year_select);
+        $final_quota_leave_year_extend = $this->get_final_jum_leave_personal_extend($all_leave_date_personal_extend, $year_select,$id_employeer);
+
+        return $final_quota_leave_year_extend;
+    }
+    //end algoritma extend utk employee dgn masa cuti +15hari
+
+    private function get_two_weeks_this_year($id_current_user, $quota_origin){
+        //posisi tahun sekarang misalkan 2019
+        //start menghitung sisa kuota tahun lalu tanpa utang cuti
+        $year_select = date('Y');
+        $year_select_previous = $year_select - 1;
+        $leave_quota_employment_last_year = $this->get_employment_quota_leave($id_current_user, $year_select_previous);
+        $jum_quota_adjustment_last_year = $this->get_adjustment_quota($id_current_user, $year_select_previous);
+        $leave_quota_last_year = $this->get_quota_left($id_current_user, $year_select_previous, $leave_quota_employment_last_year, $jum_quota_adjustment_last_year);
+        $leave_quota_remaining = $quota_origin; //quota tahun ini setelah dipotong berbagai adjustment
+        if ($leave_quota_last_year > 0 ){
+            //perhitungan extend 15 hari masa pengambilan cuti - tahun ini mengambil kuota tahun lalu
+            $final_quota_leave_year_extend = $this->get_final_quota_leave_year_extend($id_current_user, $year_select);
+            if ($final_quota_leave_year_extend == $leave_quota_remaining){
+                $leave_quota_remaining = $quota_origin + $leave_quota_last_year;
+            }
+            else if ($final_quota_leave_year_extend < $leave_quota_last_year){
+                $sisa_pengurangan = $leave_quota_last_year - $final_quota_leave_year_extend;
+                $leave_quota_remaining =  $quota_origin + $sisa_pengurangan;
+            }
+            else if ($final_quota_leave_year_extend > $leave_quota_last_year){
+                $sisa_kelebihan = $final_quota_leave_year_extend - $leave_quota_last_year;
+                $leave_quota_remaining =  $quota_origin - $sisa_kelebihan;
+            }
+        }
+        return $leave_quota_remaining;
+        //end menghitung sisa kuota tahun lalu tanpa utang cuti
+    }
+
+    private function get_minus_quota_prev_year($id_current_user, $year_select){
+        //start perhitungan tahun lalu untuk pengecekan minus
+        $year_select_previous = $year_select - 1;
+        $leave_quota_employment_last_year = $this->get_employment_quota_leave($id_current_user, $year_select_previous);
+        $jum_quota_adjustment_last_year = $this->get_adjustment_quota($id_current_user, $year_select_previous);
+        $debt_quota_last_year = $this->get_final_leave_quota_last_year($id_current_user, $year_select_previous, $leave_quota_employment_last_year, $jum_quota_adjustment_last_year);
+        $minus_quota_prev_year = abs ($debt_quota_last_year - 3);
+
+        return $minus_quota_prev_year;
+        //end perhitungan tahun lalu untuk pengecekan minus
+    }
+
+    private function cek_employee_leave_extend($id_current_user, $year_select, $current_leave_quota_origin){
+        $dates = array();
+        $list_employment_extend = $this->employment_m->employment_staff_extend($id_current_user);
+        foreach($list_employment_extend as $emp){
+            if($emp['tgl_berakhir'] == ""){
+                $emp['tgl_berakhir'] = $year_select."-12-31";
+            }
+            while (strtotime($emp['tgl_mulai']) < strtotime($emp['tgl_berakhir']))
+            {
+                $emp['tgl_mulai'] = date('Y-m-d',strtotime($emp['tgl_mulai'].'+1 day'));
+                $dates[] = date('Y',strtotime($emp['tgl_mulai']));
+            }
+        }
+        $year_prev = $year_select - 1;
+        if (in_array($year_prev, $dates)){
+            $quota_origin = $this->get_two_weeks_this_year($id_current_user, $current_leave_quota_origin);
+        }
+        else {
+            $quota_origin = $current_leave_quota_origin;
+        }
+
+        return $quota_origin;
     }
 
     private function logged_in(){

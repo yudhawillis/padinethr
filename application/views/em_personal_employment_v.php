@@ -65,23 +65,23 @@
                                                             if($emp['employee_leave_type'] == 'non_extend'){
                                                                 echo "Non Extend Leave";
                                                             } else if ($emp['employee_leave_type'] == 'extend'){
-                                                                echo "Extend Leave";
+                                                                echo "Extend Leave on January";
                                                             }
                                                             ?>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td>Leave Quota</td>
+                                                        <td>Current Leave Quota</td>
                                                         <td> : </td>
                                                         <td>
-                                                            <?php echo $emp['leave_quota'] ?> day(s)
-                                                            <?php
-                                                            if($button_reset){
-                                                                ?>
-                                                                <a href="<?php echo base_url(); ?>employment/employee/reset_leave/<?php echo $emp['id_employee']; ?>">Reset <span class="glyphicon glyphicon-transfer"></span></a>
-                                                                <?php
-                                                            }
-                                                            ?>
+                                                            <?php echo $leave_quota_remaining; ?> day(s) + <?php echo $leave_quota_debt_remaining; ?> day(s)
+<!--                                                            --><?php
+//                                                            if($button_reset){
+//                                                                ?>
+<!--                                                                <a href="--><?php //echo base_url(); ?><!--employment/employee/reset_leave/--><?php //echo $emp['id_employee']; ?><!--">Reset <span class="glyphicon glyphicon-transfer"></span></a>-->
+<!--                                                                --><?php
+//                                                            }
+//                                                            ?>
 
                                                         </td>
                                                     </tr>

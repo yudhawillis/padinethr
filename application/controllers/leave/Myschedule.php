@@ -61,8 +61,8 @@ class Myschedule extends CI_Controller{
 		$leave_quota_remaining = $quota_origin - $minus_quota_prev_year;
 		$leave_quota_debt_remaining = $current_leave_quota['debt_quota'];
 
-		echo $leave_quota_remaining;
-		echo $leave_quota_debt_remaining;
+//		echo $leave_quota_remaining;
+//		echo $leave_quota_debt_remaining;
 
 
 
