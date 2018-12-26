@@ -748,6 +748,7 @@ class Employee extends CI_Controller{
 		$data['select_id_level'] = $this->input->post('select_id_level');
 		$data['select_id_city'] = $this->input->post('select_id_city');
 		$data['select_id_employee'] = $this->input->post('select_id_employee');
+        $data['select_employee_leave_type'] = $this->input->post('select_employee_leave_type');
 
         //cek jumlah history, jika masih nol maka muncul hanya januari
         //cek jika lebih dari satu maka apakah ada yg sama dengan tahun ini, jika tidak maka muncul, jika ada maka tidak muncul
