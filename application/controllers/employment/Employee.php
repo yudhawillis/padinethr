@@ -795,11 +795,12 @@ class Employee extends CI_Controller{
         $data['startnum'] = $page + 1;
         $data['list_personal_employment'] = $this->employment_m->select_active_employment($id_employee);
 
-
+        if ($data['list_employee'][0]['id_city'] == 1 || $data['list_employee'][0]['id_city'] == 2) $weekendtype = "satsun";
+        else $weekendtype = "sun";
         $year_select = date('Y');
         $leave_quota_employment = $this->get_employment_quota_leave($id_employee, $year_select);
         $jum_quota_adjustment = $this->get_adjustment_quota($id_employee, $year_select);
-        $current_leave_quota = $this->get_final_leave_quota($id_employee, $year_select, $leave_quota_employment, $jum_quota_adjustment);
+        $current_leave_quota = $this->get_final_leave_quota($id_employee, $year_select, $leave_quota_employment, $jum_quota_adjustment, $weekendtype);
 
         $quota_origin = $this->cek_employee_leave_extend($id_employee, $year_select, $current_leave_quota['quota_origin']);
 
@@ -1206,6 +1207,8 @@ class Employee extends CI_Controller{
     //////////////////////////////////////
 
     private function get_employment_quota_leave($id_current_user, $year_select){
+//        echo $id_current_user;
+//        echo $year_select;
         $first_employment = $this->employment_m->select_first_row_employment($id_current_user);
         if (!empty($first_employment)){
             $first_employment = json_decode(json_encode($first_employment),true); //konversi stdclass to array
@@ -1272,6 +1275,9 @@ class Employee extends CI_Controller{
                     // array pertama pasti januari. array bulan kedua menghitung jumlah bulan sampai bulan array ke tiga
 
                     $i = 0;
+
+                    var_dump($list_month_employment_full_quota);
+                    var_dump($list_emp_quota);
                     foreach ($list_month_employment_full_quota as $month) {
                         $j = $i + 1;
                         if (isset($list_month_employment_full_quota[$j])) {
@@ -1279,7 +1285,8 @@ class Employee extends CI_Controller{
                             $list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
                         } else {
                             $jarak_bulan = $bulan_akhir - $list_month_employment_full_quota[$i] + 1;
-                            $list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
+                            echo $list_emp_quota[$i];
+                            //$list_jum_leave[] = ($jarak_bulan / 12) * $list_emp_quota[$i];
                         }
                         $i++;
                     }
@@ -1428,8 +1435,21 @@ class Employee extends CI_Controller{
     }
 
 
-    private function get_jum_leave_after_holiday($get_date_leave_personal_select_year, $data_joint_holiday){
+    private function get_jum_leave_after_holiday($get_date_leave_personal_select_year, $data_joint_holiday, $weekendtype){
         $jum_day_all_leave_filter = count($get_date_leave_personal_select_year);
+        foreach ($get_date_leave_personal_select_year as $date){
+            $date = date_create($date);
+            $dateday = date_format($date,"D");
+            if ($weekendtype == "satsun") {
+                if ($dateday == 'Sat' || $dateday == 'Sun') {
+                    $jum_day_all_leave_filter--;
+                }
+            } else if ($weekendtype == "sun") {
+                if ($dateday == 'Sun') {
+                    $jum_day_all_leave_filter--;
+                }
+            }
+        }
         foreach ($data_joint_holiday as $holiday){
             if (in_array($holiday, $get_date_leave_personal_select_year)){
                 $jum_day_all_leave_filter--;
@@ -1439,7 +1459,7 @@ class Employee extends CI_Controller{
         return $jum_day_all_leave_filter;
     }
 
-    private function get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment){
+    private function get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment, $weekendtype){
         $data_quota = array();
         $data_joint_holiday = $this->joint_holiday();
         $jum_dispensation = $this->get_jum_dispensation_personal($id_current_user, $year_select);
@@ -1448,7 +1468,7 @@ class Employee extends CI_Controller{
         if(!empty($all_leave_date_personal)){
             $get_date_leave_personal_current_year = $this->get_date_leave_personal_select_year($all_leave_date_personal, $year_select);
             if(!empty($get_date_leave_personal_current_year)){
-                $get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday);
+                $get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday, $weekendtype);
 
                 $quota_now = $leave_quota_employment - ($get_jum_leave_after_holiday + $jum_quota_adjustment + $jum_dispensation);
 

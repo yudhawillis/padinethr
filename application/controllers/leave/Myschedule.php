@@ -48,14 +48,15 @@ class Myschedule extends CI_Controller{
 
 		$id_current_user = $this->session->userdata('id_employee');
 		$data['current_user'] = $this->member_m->select_detil_employee($id_current_user);
+        if ($data['current_user'][0]['id_city'] == 1 || $data['current_user'][0]['id_city'] == 2) $weekendtype = "satsun";
+        else $weekendtype = "sun";
 
 		$year_select = date('Y');
 		$leave_quota_employment = $this->get_employment_quota_leave($id_current_user, $year_select);
 		$jum_quota_adjustment = $this->get_adjustment_quota($id_current_user, $year_select);
-		$current_leave_quota = $this->get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment);
+		$current_leave_quota = $this->get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment, $weekendtype);
 
 		$quota_origin = $this->cek_employee_leave_extend($id_current_user, $year_select, $current_leave_quota['quota_origin']);
-
         $minus_quota_prev_year = $this->get_minus_quota_prev_year($id_current_user, $year_select);
 
 		$leave_quota_remaining = $quota_origin - $minus_quota_prev_year;
@@ -153,7 +154,7 @@ class Myschedule extends CI_Controller{
                     //jika hasilnya kurang dari nol maka sisanya adalah dibuat sbg bilangan positif sebagai payrol_deduction
                     $payroll_deduction = abs($cek_req_quota_ext);
                 } else {
-                    //jika hasilnya 0 atau lebih dari nol maka tetap sebagai hasil positif dan mengupdate $debt_leave_quota
+                    //jika hasilnya 0 atau alebih dari nol maka tetap sebagai hasil positif dan mengupdate $debt_leave_quota
                     $debt_leave_quota = $cek_req_quota_ext;
 
                 }
@@ -518,18 +519,33 @@ class Myschedule extends CI_Controller{
 	}
 
 
-	private function get_jum_leave_after_holiday($get_date_leave_personal_select_year, $data_joint_holiday){
+	private function get_jum_leave_after_holiday($get_date_leave_personal_select_year, $data_joint_holiday, $weekendtype){
 		$jum_day_all_leave_filter = count($get_date_leave_personal_select_year);
+
+		foreach ($get_date_leave_personal_select_year as $date){
+            $date = date_create($date);
+            $dateday = date_format($date,"D");
+            if ($weekendtype == "satsun") {
+                if ($dateday == 'Sat' || $dateday == 'Sun') {
+                    $jum_day_all_leave_filter--;
+                }
+            } else if ($weekendtype == "sun") {
+                if ($dateday == 'Sun') {
+                    $jum_day_all_leave_filter--;
+                }
+            }
+        }
+
 		foreach ($data_joint_holiday as $holiday){
 			if (in_array($holiday, $get_date_leave_personal_select_year)){
 				$jum_day_all_leave_filter--;
 			}
-
 		}
+
 		return $jum_day_all_leave_filter;
 	}
 
-	private function get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment){
+	private function get_final_leave_quota($id_current_user, $year_select, $leave_quota_employment, $jum_quota_adjustment, $weekendtype){
 		$data_quota = array();
 		$data_joint_holiday = $this->joint_holiday();
 		$jum_dispensation = $this->get_jum_dispensation_personal($id_current_user, $year_select);
@@ -538,7 +554,7 @@ class Myschedule extends CI_Controller{
 		if(!empty($all_leave_date_personal)){
 			$get_date_leave_personal_current_year = $this->get_date_leave_personal_select_year($all_leave_date_personal, $year_select);
 			if(!empty($get_date_leave_personal_current_year)){
-				$get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday);
+				$get_jum_leave_after_holiday = $this->get_jum_leave_after_holiday($get_date_leave_personal_current_year, $data_joint_holiday, $weekendtype);
 
 				$quota_now = $leave_quota_employment - ($get_jum_leave_after_holiday + $jum_quota_adjustment + $jum_dispensation);
 
